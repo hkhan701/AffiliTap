@@ -3,12 +3,21 @@ import { useState } from "react";
 import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes } from "react-icons/fa"
 import { browser } from "webextension-polyfill-ts"
 import { getPage } from "@/utils/urls"
+import { activateLicenseKey, verifyLicenseKey } from "@/utils/license"; 
+import LicensePopup from './licensePopup';  // Import the LicensePopup
+import logo from 'src/assets/images/logo.svg'
+import { browserStorage } from "@/utils/browserStorage";
 
 import "../../globals.css"
 
 export default function Popup() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [licenseStatus, setLicenseStatus] = useState<'active' | 'inactive'>('inactive')
+  const [licenseKey, setLicenseKey] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupType, setPopupType] = useState<'success' | 'error'>('success');
 
   const handleOpenSettings = () => setIsSettingsOpen(true)
   const handleBack = () => setIsSettingsOpen(false)
@@ -18,27 +27,48 @@ export default function Popup() {
       url: browser.runtime.getURL(getPage("index.html")),
     })
   }
+  const handleSaveLicense = async () => {
+    try {
+      console.log("License key:", licenseKey);
+      const result = await activateLicenseKey(licenseKey);
+      if (result) {
+        setPopupMessage("License activated successfully!");
+        setPopupType('success');
+      } else {
+        setPopupMessage("License activation failed. Please check your key.");
+        setPopupType('error');
+      }
+    } catch (error) {
+      setPopupMessage("There was an error activating the license. Please try again.");
+      setPopupType('error');
+    }
+    setIsPopupOpen(true);
+    setLoading(false);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+  };
 
   const handleAddTemplate = () => {
     // Add template logic here
+    console.log("Add template clicked");
+    // get current lciense
+    const currentLicense = browserStorage.get("licenseKey");
+    console.log("Current License:", currentLicense);
   }
-  const handleSaveLicense = () => {
-    console.log("License key saved");
-    // TEST
-    setLicenseStatus(prevStatus => prevStatus === 'active' ? 'inactive' : 'active')
-    // Save license logic here
-  }
+
   const handlePurchaseRedirect = () => {
-    window.open("https://example.com/purchase-license", "_blank"); // Update with real purchase link
+    window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank"); // Update with real purchase link
   }
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden">
+    <div className="bg-blue-100 h-full">
       <div className="p-4 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-center text-gray-800">AffiliTap</h1>
+        <img src={logo} alt="logo" width={200}/>
       </div>
       <div className="p-4">
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center space-y-8">
           {isSettingsOpen ? (
             <>
               <h2 className="text-xl font-semibold text-gray-800">Enter License Key</h2>
@@ -46,13 +76,16 @@ export default function Popup() {
                 <input
                   type="text"
                   placeholder="Enter your license key"
+                  value={licenseKey}
+                  onChange={(e) => setLicenseKey(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   onClick={handleSaveLicense}
                   className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  disabled={loading}
                 >
-                  Save
+                 {loading ? "Activating..." : "Save"}
                 </button>
               </div>
               <p className="text-sm text-gray-600">Don't have a license key?</p>
@@ -93,7 +126,7 @@ export default function Popup() {
               </button>
               <button
                 onClick={handleOpenSettings}
-                className="w-full bg-gray-100 text-gray-800 font-semibold py-2 px-4 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
+                className="border-solid border-2 border-black w-full bg-gray-100 text-gray-800 font-semibold py-2 px-4 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
               >
                 <FaCog className="mr-2 h-4 w-4" />
                 Settings
@@ -102,6 +135,13 @@ export default function Popup() {
           )}
         </div>
       </div>
+      {/* License Error/Success Popup */}
+      <LicensePopup
+        isOpen={isPopupOpen}
+        message={popupMessage}
+        type={popupType}
+        onClose={handleClosePopup}
+      />
     </div>
   )
 }
