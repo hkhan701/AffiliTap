@@ -1,39 +1,46 @@
-import { createRoot } from "react-dom/client"
-import { useState } from "react";
-import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes } from "react-icons/fa"
-import { browser } from "webextension-polyfill-ts"
-import { getPage } from "@/utils/urls"
-import { activateLicenseKey, verifyLicenseKey } from "@/utils/license"; 
-import LicensePopup from './licensePopup';  // Import the LicensePopup
-import logo from 'src/assets/images/logo.svg'
+import { createRoot } from "react-dom/client";
+import { useEffect, useState } from "react";
+import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes } from "react-icons/fa";
+import { browser } from "webextension-polyfill-ts";
+import { getPage } from "@/utils/urls";
+import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { browserStorage } from "@/utils/browserStorage";
+import InfoPopup from './infoPopup';
+import logo from 'src/assets/images/logo.svg';
 
-import "../../globals.css"
+import "../../globals.css";
 
 export default function Popup() {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [licenseStatus, setLicenseStatus] = useState<'active' | 'inactive'>('inactive')
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [licenseStatus, setLicenseStatus] = useState("");
   const [licenseKey, setLicenseKey] = useState("");
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [popupType, setPopupType] = useState<'success' | 'error'>('success');
 
-  const handleOpenSettings = () => setIsSettingsOpen(true)
-  const handleBack = () => setIsSettingsOpen(false)
+  const handleOpenSettings = () => setIsSettingsOpen(true);
+  const handleBack = () => setIsSettingsOpen(false);
+  const handleClosePopup = () => setIsPopupOpen(false);
 
   const handleOpenPage = () => {
     browser.tabs.create({
       url: browser.runtime.getURL(getPage("index.html")),
-    })
-  }
+    });
+  };
+
   const handleSaveLicense = async () => {
+    setLoading(true);
     try {
-      console.log("License key:", licenseKey);
       const result = await activateLicenseKey(licenseKey);
       if (result) {
         setPopupMessage("License activated successfully!");
         setPopupType('success');
+        const status = await getLicenseStatus();
+        const plan = await getCurrentPlan();
+        setLicenseStatus(status);
+        setCurrentPlan(plan);
       } else {
         setPopupMessage("License activation failed. Please check your key.");
         setPopupType('error');
@@ -46,26 +53,36 @@ export default function Popup() {
     setLoading(false);
   };
 
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
-
-  const handleAddTemplate = () => {
-    // Add template logic here
-    console.log("Add template clicked");
-    // get current lciense
-    const currentLicense = browserStorage.get("licenseKey");
-    console.log("Current License:", currentLicense);
-  }
-
   const handlePurchaseRedirect = () => {
     window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank"); // Update with real purchase link
   }
 
+
+  const handleAddTemplate = () => {
+    // Add template logic here
+    console.log("Add template clicked");
+    handleOpenPage();
+    // get current lciense
+    const currentLicense = browserStorage.get("licenseData");
+    console.log(currentLicense);
+  }
+
+  useEffect(() => {
+    const fetchLicenseStatus = async () => {
+      const status = await getLicenseStatus();
+      setLicenseStatus(status);
+
+      const plan = await getCurrentPlan();
+      setCurrentPlan(plan);
+    };
+
+    fetchLicenseStatus();
+  }, []);
+
   return (
     <div className="bg-blue-100 h-full">
       <div className="p-4 border-b border-gray-200">
-        <img src={logo} alt="logo" width={200}/>
+        <img src={logo} alt="logo" width={200} />
       </div>
       <div className="p-4">
         <div className="flex flex-col items-center space-y-8">
@@ -85,7 +102,7 @@ export default function Popup() {
                   className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
                   disabled={loading}
                 >
-                 {loading ? "Activating..." : "Save"}
+                  {loading ? "Activating..." : "Save"}
                 </button>
               </div>
               <p className="text-sm text-gray-600">Don't have a license key?</p>
@@ -95,10 +112,7 @@ export default function Popup() {
               >
                 Purchase a license
               </button>
-              <button
-                onClick={handleBack}
-                className="mt-4 text-gray-600 hover:text-gray-800 focus:outline-none"
-              >
+              <button onClick={handleBack} className="mt-4 text-gray-600 hover:text-gray-800">
                 <FaArrowLeft className="inline-block mr-2 h-4 w-4" />
                 Back
               </button>
@@ -109,7 +123,7 @@ export default function Popup() {
                 <span className="text-sm font-medium text-gray-700">License Status:</span>
                 {licenseStatus === 'active' ? (
                   <span className="text-green-500 flex items-center">
-                    <FaCheck className="mr-1 h-4 w-4" /> Active
+                    <FaCheck className="mr-1 h-4 w-4" /> Active (Plan: {currentPlan})
                   </span>
                 ) : (
                   <span className="text-red-500 flex items-center">
@@ -136,14 +150,14 @@ export default function Popup() {
         </div>
       </div>
       {/* License Error/Success Popup */}
-      <LicensePopup
+      <InfoPopup
         isOpen={isPopupOpen}
         message={popupMessage}
         type={popupType}
         onClose={handleClosePopup}
       />
     </div>
-  )
+  );
 }
 
 createRoot(document.getElementById("root")!).render(<Popup />);
