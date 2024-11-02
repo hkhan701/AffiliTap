@@ -57,7 +57,6 @@ export default function Popup() {
     window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank"); // Update with real purchase link
   }
 
-
   const handleAddTemplate = () => {
     // Add template logic here
     console.log("Add template clicked");

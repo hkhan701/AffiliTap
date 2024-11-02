@@ -27,9 +27,10 @@ function App() {
   // }, [isActive]);
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-100 rounded-md p-2">
-      Content Script {isActive ? "Active" : "Inactive"}
-    </div>
+    <></>
+    // <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-100 rounded-md p-2">
+    //   Content Script {isActive ? "Active" : "Inactive"}
+    // </div>
   )
 }
 
