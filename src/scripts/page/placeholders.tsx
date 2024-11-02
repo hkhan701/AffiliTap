@@ -24,7 +24,7 @@ export default function Placeholders({ isContentLocked = false } ) {
     return (
         <div className="w-72">
             <div className="bg-white rounded-lg shadow-md overflow-hidden h-full">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <div className="px-4 py-3 bg-blue-100 border-b border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-800">Placeholders</h2>
                 </div>
                 <div className="p-4">

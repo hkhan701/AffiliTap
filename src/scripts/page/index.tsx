@@ -4,13 +4,15 @@ import { FaPlus, FaTrash, FaSave, FaCheck, FaTimes, FaCopy, FaLock } from 'react
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
 import { browserStorage } from "@/utils/browserStorage"
 import Footer from "./footer"
+import Placeholders from "./placeholders"
 import InfoPopup from '../popup/infoPopup'
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
 
 export default function Page() {
+  const defaultContent = '🎉 Limited Time Offer! 🎉\n{product_title}\n\n{discount_percentage} OFF!\nSave an extra ${coupon_$} with clip on coupon\n#ad\n{amz_link}'
   const [templates, setTemplates] = useState([
-    { id: "default", name: 'Default Template', content: '' }
+    { id: "default", name: 'Default Template', content: defaultContent }
   ])
   const [activeTemplate, setActiveTemplate] = useState(templates[0].id)
   const [newTemplateName, setNewTemplateName] = useState('')
@@ -23,25 +25,6 @@ export default function Page() {
   const [popupType, setPopupType] = useState<'success' | 'error'>('success')
 
   const handleClosePopup = () => setIsPopupOpen(false)
-
-  type Placeholder = {
-    key: string
-    description: string
-  }
-
-  const placeholders: Placeholder[] = [
-    { key: '{title}', description: 'The title of the product' },
-    { key: '{final_price}', description: 'The final price of the product' },
-    { key: '{list_price}', description: 'The original list price of the product' },
-    { key: '{discount_percentage}', description: 'The discount percentage' },
-    { key: '{rating}', description: 'The product rating' },
-    { key: '{review_count}', description: 'The number of reviews' },
-  ]
-
-  const handleCopyPlaceholder = (placeholder: string) => {
-    navigator.clipboard.writeText(placeholder)
-    alert(`${placeholder} copied to clipboard`)
-  }
 
   useEffect(() => {
     const currentTemplate = templates.find(t => t.id === activeTemplate)
@@ -189,7 +172,7 @@ export default function Page() {
                 <p className="text-gray-600 mb-4">
                   You need an active license to use this feature.
                 </p>
-                <button 
+                <button
                   className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
                   onClick={() => window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank")}
                 >
@@ -198,7 +181,7 @@ export default function Page() {
               </div>
             </div>
           )}
-          
+
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex-1 max-w-md">
@@ -258,39 +241,13 @@ export default function Page() {
                   <textarea
                     value={templates.find(t => t.id === activeTemplate)?.content || ''}
                     onChange={(e) => handleTemplateContentChange(e.target.value)}
-                    placeholder="Product title: {title}&#10;Final price: {final_price}&#10;List price: {list_price}"
+                    placeholder={defaultContent}
                     className="w-full h-64 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono disabled:bg-gray-100 disabled:text-gray-500"
                     disabled={isContentLocked}
                   />
                 </div>
 
-                <div className="w-72">
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden h-full">
-                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                      <h2 className="text-lg font-semibold text-gray-800">Placeholders</h2>
-                    </div>
-                    <div className="p-4">
-                      <div className="space-y-3">
-                        {placeholders.map((placeholder) => (
-                          <div key={placeholder.key} className="flex flex-col">
-                            <div className="flex items-center justify-between">
-                              <p className="font-mono text-sm text-gray-700">{placeholder.key}</p>
-                              <button
-                                onClick={() => handleCopyPlaceholder(placeholder.key)}
-                                className="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-                                disabled={isContentLocked}
-                              >
-                                <FaCopy className="inline-block mr-1 h-3 w-3" />
-                                Copy
-                              </button>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">{placeholder.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               <Placeholders isContentLocked={isContentLocked} />
               </div>
             </div>
 
@@ -298,11 +255,10 @@ export default function Page() {
               <button
                 onClick={handleSaveTemplate}
                 disabled={!hasChanges || isContentLocked}
-                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${
-                  hasChanges && !isContentLocked
-                    ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${hasChanges && !isContentLocked
+                  ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
               >
                 <FaSave className="mr-2" /> Save
               </button>
