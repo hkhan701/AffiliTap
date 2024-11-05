@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { renderer } from "@/lib/renderer"
+import { browser } from "webextension-polyfill-ts"
 
 import "../../globals.css"
 
@@ -8,23 +9,31 @@ const containerClassName = "chrome-extension-boilerplate-container-class"
 const tag = "chrome-extension-boilerplate-container"
 
 function App() {
-  const [isActive] = useState(false)
+  // const [isActive, setIsActive] = useState(false)
+
+  const getProductData = () => {
+    const titleElement = document.querySelector("span#productTitle");
+    return titleElement ? titleElement.textContent.trim() : null;
+  };
 
   // Please remove default_popup from manifest.json
   // And you can enable this code to open to communicate with content
-  // useEffect(() => {
-  //   const handleListener = (message) => {
-  //     console.log(message);
+  useEffect(() => {
 
-  //     setIsActive(() => !isActive);
-  //   };
+    const data = getProductData();
+    if (data) {
+      console.log("Sending message:", data);
+      browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
+    }
+    // const handleListener = (message) => {
+    //   setIsActive(() => !isActive);
+    // };
 
-  //   browser.runtime.onMessage.addListener(handleListener);
-
-  //   return () => {
-  //     browser.runtime.onMessage.removeListener(handleListener);
-  //   };
-  // }, [isActive]);
+    // browser.runtime.onMessage.addListener(handleListener);
+    // return () => {
+    //   browser.runtime.onMessage.removeListener(handleListener);
+    // };
+  }, []);
 
   return (
     <></>

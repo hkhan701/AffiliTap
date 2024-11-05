@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
   "name": "AffiliTap",
-  "description": "A chrome extension",
+  "description": "A tool to help you copy amazon posts easily and quickly",
   "version": "1.0",
+  "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms", "sidePanel"],
+  "host_permissions": ["*://www.amazon.ca/*", "*://www.google.ca/*"],
   "action": {
-    "default_popup": "popup/index.html",
     "default_icon": {
       "16": "assets/images/icon-16.png"
     },
@@ -22,5 +23,8 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms"]
+  "side_panel": {
+        "default_path": "sidepanel/index.html",
+        "matches": ["*://www.amazon.ca/*", "*://*.amazon.ca/*"] 
+    }
 }

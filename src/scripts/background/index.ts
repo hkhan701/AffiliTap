@@ -20,6 +20,23 @@ browser.alarms.create('CHECK-LICENSE', {
   periodInMinutes: 1,
 }) // validate license every 30 mins
 
+let productData = null;
+
+// Listen for product title messages
+browser.runtime.onMessage.addListener((message) => {
+  if (message.action === "SEND_PRODUCT_DATA") {
+    console.log("Received product data:", message.data);
+    productData = message.data;
+    // Notify the side panel of the updated product data
+    browser.runtime.sendMessage({ action: "UPDATE_PRODUCT_DATA", data: productData });
+  }
+});
+
+
+// Workaround for sidePanel typing issue
+const sidePanel = (browser as any).sidePanel;
+sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+   .catch((error) => console.error(error));
 
 
 // Please remove default_popup from manifest.json

@@ -21,6 +21,7 @@ export default defineConfig({
     "popup/index": "src/scripts/popup/index.tsx",
     "options/index": "src/scripts/options/index.tsx",
     "page/index": "src/scripts/page/index.tsx",
+    "sidepanel/index": "src/scripts/sidepanel/index.tsx",
   },
 
   outExtension: () => ({ js: ".js" }),
@@ -69,6 +70,10 @@ export default defineConfig({
         {
           from: "./src/scripts/page/index.html",
           to: "./page",
+        },
+        {
+          from: "./src/scripts/sidepanel/index.html",  // Copy side panel HTML
+          to: "./sidepanel",
         },
       ],
       watch: process.env.NODE_ENV === "development",
