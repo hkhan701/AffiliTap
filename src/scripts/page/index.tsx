@@ -4,6 +4,7 @@ import { FaPlus, FaTrash, FaSave, FaCheck, FaTimes, FaCopy, FaLock } from 'react
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
 import { browserStorage } from "@/utils/browserStorage"
 import Footer from "./footer"
+import LicenseStatusHeader from "./licenseStatusHeader"
 import Placeholders from "./placeholders"
 import InfoPopup from '../popup/infoPopup'
 import logo from 'src/assets/images/logo.svg'
@@ -146,16 +147,7 @@ export default function Page() {
             </div>
           </div>
           <div className="flex items-center">
-            <span className="mr-2 text-sm font-medium text-gray-700">License Status:</span>
-            {licenseStatus === 'active' ? (
-              <span className="text-green-500 flex items-center">
-                <FaCheck className="mr-1 h-4 w-4" /> Active (Plan: {currentPlan})
-              </span>
-            ) : (
-              <span className="text-red-500 flex items-center">
-                <FaTimes className="mr-1 h-4 w-4" /> Inactive
-              </span>
-            )}
+          <LicenseStatusHeader/>
           </div>
         </div>
       </header>
