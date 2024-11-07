@@ -11,13 +11,20 @@ const tag = "chrome-extension-boilerplate-container"
 
 type ProductData = {
   product_name: string | null;
-  price_ca_whole: string | null;
-  price_ca_fraction: string | null;
+  current_price: number | null;
   list_price: string | null;
   percent_off_list_price: string | null;
 };
 
-const selectors: Record<keyof ProductData, string> = {
+type Selectors = {
+  product_name: string;
+  price_ca_whole: string;
+  price_ca_fraction: string;
+  list_price: string;
+  percent_off_list_price: string;
+};
+
+const selectors: Selectors = {
   product_name: "span#productTitle",
   price_ca_whole: "span.a-price-whole",
   price_ca_fraction: "span.a-price-fraction",
@@ -25,7 +32,7 @@ const selectors: Record<keyof ProductData, string> = {
   percent_off_list_price: 'span.savingPriceOverride.reinventPriceSavingsPercentageMargin.savingsPercentage',
 };
 
-const data: ProductData = {
+const data: Record<string, string | null> = {
   product_name: null,
   price_ca_whole: null,
   price_ca_fraction: null,
@@ -36,22 +43,29 @@ const data: ProductData = {
 function App() {
   const getProductData = () => {
 
-    for (const [key, selector] of Object.entries(selectors) as [keyof ProductData, string][]) {
+    // Populate data object using selectors
+    for (const [key, selector] of Object.entries(selectors) as [keyof Selectors, string][]) {
       const element = document.querySelector(selector);
       data[key] = element ? element.textContent?.trim() || null : null;
     }
 
-    data.list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
+    const current_price = data.price_ca_whole && data.price_ca_fraction
+    ? parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) +
+      parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100
+    : null;
 
-    const productData = {
-      ...data,
-      current_price: data.price_ca_whole && data.price_ca_fraction
-        ? parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) +
-          parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100
-        : null,
-    };
+    const list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
+    const percent_off_list_price = data.percent_off_list_price ? data.percent_off_list_price.replace('-', '').replace('%', '') : null;
 
-    return productData;
+      // Return structured data
+      const productData = {
+        product_name: data.product_name,
+        current_price: current_price,
+        list_price: list_price,
+        percent_off_list_price: percent_off_list_price,
+      };
+
+      return productData;
   };
 
   // Please remove default_popup from manifest.json
