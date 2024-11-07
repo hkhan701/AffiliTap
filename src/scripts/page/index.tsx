@@ -12,18 +12,19 @@ import "../../globals.css"
 
 export default function Page() {
   const defaultContent = '🎉 Limited Time Offer! 🎉\n{product_title}\n\n{discount_percentage} OFF!\nSave an extra ${coupon_$} with clip on coupon\n#ad\n{amz_link}'
-  const [templates, setTemplates] = useState([
-    { id: "default", name: 'Default Template', content: defaultContent }
-  ])
+  const [templates, setTemplates] = useState([{ id: "default", name: 'Default Template', content: defaultContent }])
   const [activeTemplate, setActiveTemplate] = useState(templates[0].id)
   const [newTemplateName, setNewTemplateName] = useState('')
   const [editingName, setEditingName] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
   const [licenseStatus, setLicenseStatus] = useState("")
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
+
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupMessage, setPopupMessage] = useState("")
   const [popupType, setPopupType] = useState<'success' | 'error'>('success')
+
+  const isContentLocked = licenseStatus !== 'active'
 
   const handleClosePopup = () => setIsPopupOpen(false)
 
@@ -111,28 +112,26 @@ export default function Page() {
     }
   }
 
-  const isContentLocked = licenseStatus !== 'active'
-
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      const storedTemplates = await browserStorage.get('templates')
-      if (storedTemplates) {
-        const templatesData = JSON.parse(storedTemplates)
-        setTemplates(templatesData)
-        if (templatesData.length > 0) {
-          setActiveTemplate(templatesData[0].id)
-          setEditingName(templatesData[0].name)
-        }
+  const fetchTemplates = async () => {
+    const storedTemplates = await browserStorage.get('templates')
+    if (storedTemplates) {
+      const templatesData = JSON.parse(storedTemplates)
+      setTemplates(templatesData)
+      if (templatesData.length > 0) {
+        setActiveTemplate(templatesData[0].id)
+        setEditingName(templatesData[0].name)
       }
     }
+  }
 
-    const fetchLicenseStatus = async () => {
-      const status = await getLicenseStatus()
-      setLicenseStatus(status)
-      const plan = await getCurrentPlan()
-      setCurrentPlan(plan)
-    }
+  const fetchLicenseStatus = async () => {
+    const status = await getLicenseStatus()
+    setLicenseStatus(status)
+    const plan = await getCurrentPlan()
+    setCurrentPlan(plan)
+  }
 
+  useEffect(() => {
     fetchLicenseStatus()
     fetchTemplates()
   }, [])
