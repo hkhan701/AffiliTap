@@ -1,14 +1,21 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes } from "react-icons/fa";
+import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes, FaCopy } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
-import { getPage } from "@/utils/urls";
 import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
+import { handlePurchaseRedirect, handleAddTemplate } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
+import LicenseStatusHeader from "../page/licenseStatusHeader";
 import logo from 'src/assets/images/logo.svg';
 
 import "../../globals.css";
+
+interface Template {
+    id: string;
+    name: string;
+    content: string;
+}
 
 export default function SidePanel() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -21,18 +28,35 @@ export default function SidePanel() {
     const [popupType, setPopupType] = useState<'success' | 'error'>('success');
     const [productData, setProductData] = useState(null);
     const [trackingIds, setTrackingIds] = useState([]);
+    const [copied, setCopied] = useState(false)
+    const [templates, setTemplates] = useState<Template[]>([]);
+    const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
     const handleOpenSettings = () => setIsSettingsOpen(true);
     const handleBack = () => setIsSettingsOpen(false);
     const handleClosePopup = () => setIsPopupOpen(false);
 
-    async function md5Hash(message: string) {
-        const msgUint8 = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);             
-        const hashArray = Array.from(new Uint8Array(hashBuffer));                  
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); 
-        return hashHex;
-    }
+    const fetchTemplates = async () => {
+        const storedTemplates = await browserStorage.get('templates');
+        // store template as array
+        if (storedTemplates) {
+            const templatesData = JSON.parse(storedTemplates);
+            setTemplates(templatesData);
+            if (templatesData.length > 0) {
+                setSelectedTemplate(templatesData[0].id);
+            }
+        }
+    };
+    
+    const handleTemplateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedTemplate = templates.find(template => template.id === event.target.value);
+        if (selectedTemplate) {
+            console.log("The selected template name is: ", selectedTemplate.name);
+        }
+        setSelectedTemplate(event.target.value);
+    };
+
+    const isContentLocked = licenseStatus !== 'active';
 
     const getTrackingIds = async () => {
         // for US: https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1
@@ -42,50 +66,44 @@ export default function SidePanel() {
         setTrackingIds(trackingIds);
     };
 
-    const getShortUrl = async (trackingId: string) => {
-        const tabs = await browser.tabs.query({ active: true, lastFocusedWindow: true });
+    const fetchProductData = async () => {
+        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
         const activeTab = tabs[0];
-        const longUrl = activeTab.url;
 
-        const obj = {
-            p_parameter: 'SS v2',
-            test_name: 'SiteStripe V3.0',
-            toolCreation: 'SS',
-            adUnitType: 'TEXT',
-            adUnitDescription: 'Product links Text only link',
-            destinationType: 'ASIN',
-            marketplaceId: '1',
-            store: trackingId,
-            tag: trackingId,
-            adUnitSubType: 'ShortLinks',
-            linkCode: 'sl1',
-            createTime: new Date().getTime(),
-        };
-    
-        const linkId = await md5Hash(JSON.stringify(obj));
-        const linkToFetch = `https://www.amazon.ca/associates/sitestripe/getShortUrl?longUrl=`
-        +encodeURIComponent(`${longUrl}&linkCode=sl1&tag=${trackingId}&linkId=${linkId}`)
-         + `&language=en_CA&ref_=as_li_ss_tl&marketplaceId=7`
-
-        const res = await fetch(linkToFetch);
-        const links = await res.json();
-        console.log("The links are: ", links);
-        return links.shortUrl;
+        if (activeTab?.id) {
+            try {
+                // Send a message to the content script to get product data
+                const response = await browser.tabs.sendMessage(activeTab.id, { action: "REQUEST_PRODUCT_DATA" });
+                setProductData(response.data);
+            } catch (error) {
+                console.error("Error fetching product data:", error);
+            }
+        }
     };
 
+    const fetchLicenseStatus = async () => {
+        const status = await getLicenseStatus();
+        setLicenseStatus(status);
+
+        const plan = await getCurrentPlan();
+        setCurrentPlan(plan);
+    };
+
+    const handleProductDataUpdate = (message) => {
+        if (message.action === "UPDATE_PRODUCT_DATA") {
+            console.log("Updated product data:", message.data);
+            setProductData(message.data);
+        }
+    };
 
     useEffect(() => {
         getTrackingIds();
-        const handleProductDataUpdate = (message) => {
-            if (message.action === "UPDATE_PRODUCT_DATA") {
-                console.log("Updated product data:", message.data);
-                setProductData(message.data);
-            }
-        };
+        fetchProductData();
+        fetchLicenseStatus();
+        fetchTemplates();
 
         // Listen for product data updates from the background script
         browser.runtime.onMessage.addListener(handleProductDataUpdate);
-
         return () => {
             browser.runtime.onMessage.removeListener(handleProductDataUpdate);
         };
@@ -114,27 +132,13 @@ export default function SidePanel() {
         setLoading(false);
     };
 
-    const handlePurchaseRedirect = () => {
-        window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank"); // Update with real purchase link
-    }
+    const sampleText = "test"
 
-    const handleAddTemplate = () => {
-        browser.tabs.create({
-            url: browser.runtime.getURL(getPage("index.html")),
-        });
-    }
-
-    useEffect(() => {
-        const fetchLicenseStatus = async () => {
-            const status = await getLicenseStatus();
-            setLicenseStatus(status);
-
-            const plan = await getCurrentPlan();
-            setCurrentPlan(plan);
-        };
-
-        fetchLicenseStatus();
-    }, []);
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
         <div className="bg-blue-100 h-full">
@@ -176,18 +180,7 @@ export default function SidePanel() {
                         </>
                     ) : (
                         <>
-                            <div className="w-full mb-4 p-2 rounded-md bg-gray-100 flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-700">License Status:</span>
-                                {licenseStatus === 'active' ? (
-                                    <span className="text-green-500 flex items-center">
-                                        <FaCheck className="mr-1 h-4 w-4" /> Active (Plan: {currentPlan})
-                                    </span>
-                                ) : (
-                                    <span className="text-red-500 flex items-center">
-                                        <FaTimes className="mr-1 h-4 w-4" /> Inactive
-                                    </span>
-                                )}
-                            </div>
+                            <LicenseStatusHeader />
                             <button
                                 onClick={handleAddTemplate}
                                 className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center"
@@ -202,10 +195,57 @@ export default function SidePanel() {
                                 <FaCog className="mr-2 h-4 w-4" />
                                 Settings
                             </button>
-                            <h1>Product Information</h1>
-                            <p>{trackingIds || "Loading Tracking ids..."}</p>
-                            <p>{productData || "Loading Product..."}</p>
-                            
+
+                            <div className="w-full">
+                                <select
+                                    value={selectedTemplate}
+                                    onChange={handleTemplateChange}
+                                    className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
+                                >
+                                    {templates.length > 0 ? (
+                                        templates.map((template) => (
+                                            <option key={template.id} value={template.id}>
+                                                {template.name}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>No templates available</option>
+                                    )}
+                                </select>
+                            </div>
+
+
+                            <div className="w-full bg-white rounded-lg shadow-md p-4">
+                                <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
+                                <div className="bg-gray-100 rounded-lg p-4 mb-2">
+                                    <pre className="text-sm whitespace-pre-wrap">{sampleText}</pre>
+                                </div>
+                                <div className="flex justify-start">
+                                    <button
+                                        onClick={() => copyToClipboard(sampleText)}
+                                        className={
+                                            `px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${copied ? 'animate-pulse text-green-500' : ''}`
+                                        }
+                                        disabled={isContentLocked}
+                                    >
+                                        <FaCopy className="inline-block mr-1 h-3 w-3" />
+                                        {copied ? 'Copied!' : 'Copy'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {productData ? (
+                                <ul>
+                                    {Object.entries(productData).map(([key, value]) => (
+                                        <li key={key}>
+                                            <strong>{key}:</strong> {JSON.stringify(value)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No product data available.</p>
+                            )}
+
                         </>
                     )}
                 </div>
