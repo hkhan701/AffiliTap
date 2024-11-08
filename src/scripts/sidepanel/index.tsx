@@ -7,6 +7,7 @@ import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductN
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
+import ContentLockOverlay from "../page/contentLockOverlay";
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
@@ -241,8 +242,9 @@ export default function SidePanel() {
                                 </select>
                             </div>
 
-
-                            <div className="w-full bg-white rounded-lg shadow-md p-4">
+                            
+                            <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
+                            <ContentLockOverlay isContentLocked={isContentLocked}/>
                                 <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
                                 <div className="bg-gray-100 rounded-lg p-4 mb-2">
                                     <pre className="text-sm whitespace-pre-wrap">{previewText}</pre>

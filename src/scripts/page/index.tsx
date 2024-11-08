@@ -1,10 +1,10 @@
 import { createRoot } from "react-dom/client"
 import { useState, useEffect } from 'react'
-import { FaPlus, FaTrash, FaSave, FaLock } from 'react-icons/fa'
+import { FaPlus, FaTrash, FaSave } from 'react-icons/fa'
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
-import { handlePurchaseRedirect } from "@/utils/utils"
 import { browserStorage } from "@/utils/browserStorage"
 import Footer from "./footer"
+import ContentLockOverlay from "./contentLockOverlay"
 import LicenseStatusHeader from "./licenseStatusHeader"
 import Placeholders from "./placeholders"
 import InfoPopup from '../popup/infoPopup'
@@ -53,7 +53,7 @@ export default function Page() {
     }
   }
 
-  const handleDeleteTemplate = (id) => {
+  const handleDeleteTemplate = (id: string) => {
     const updatedTemplates = templates.filter(template => template.id !== id)
     if (updatedTemplates.length === 0) {
       setPopupMessage("Cannot delete the last template")
@@ -144,25 +144,7 @@ export default function Page() {
 
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          {isContentLocked && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-              <div className="text-center p-6 bg-white/80 rounded-lg shadow-lg max-w-md">
-                <FaLock className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Feature Restricted
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  You need an active license to use this feature.
-                </p>
-                <button
-                  className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
-                  onClick={handlePurchaseRedirect}
-                >
-                  Upgrade Now
-                </button>
-              </div>
-            </div>
-          )}
+        <ContentLockOverlay isContentLocked={isContentLocked}/>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
