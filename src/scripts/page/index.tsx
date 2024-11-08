@@ -1,21 +1,23 @@
 import { createRoot } from "react-dom/client"
 import { useState, useEffect } from 'react'
-import { FaPlus, FaTrash, FaSave, FaCheck, FaTimes, FaCopy, FaLock } from 'react-icons/fa'
+import { FaPlus, FaTrash, FaSave, FaLock } from 'react-icons/fa'
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
 import { browserStorage } from "@/utils/browserStorage"
 import Footer from "./footer"
 import LicenseStatusHeader from "./licenseStatusHeader"
 import Placeholders from "./placeholders"
 import InfoPopup from '../popup/infoPopup'
+// @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
 
 export default function Page() {
-  const defaultContent = '🎉 Limited Time Offer! 🎉\n{product_title}\n\n{discount_percentage} OFF!\nSave an extra ${coupon_$} with clip on coupon\n#ad\n{amz_link}'
-  const [templates, setTemplates] = useState([{ id: "default", name: 'Default Template', content: defaultContent }])
+  const defaultContent = '🎉 Limited Time Offer! 🎉\n{product_name}\n\n{discount_percentage} OFF!\nSave an extra ${coupon_$} with clip on coupon\n#ad\n{amz_link}'
+  const [templates, setTemplates] = useState([{ id: "default", name: 'Default Template', content: defaultContent, titleWordLimit: 10 }])
   const [activeTemplate, setActiveTemplate] = useState(templates[0].id)
   const [newTemplateName, setNewTemplateName] = useState('')
   const [editingName, setEditingName] = useState('')
+  const [titleWordLimit, setTitleWordLimit] = useState(10)
   const [hasChanges, setHasChanges] = useState(false)
   const [licenseStatus, setLicenseStatus] = useState("")
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
@@ -32,6 +34,7 @@ export default function Page() {
     const currentTemplate = templates.find(t => t.id === activeTemplate)
     if (currentTemplate) {
       setEditingName(currentTemplate.name)
+      setTitleWordLimit(currentTemplate.titleWordLimit)
     }
   }, [activeTemplate])
 
@@ -41,12 +44,14 @@ export default function Page() {
       const newTemplate = {
         id,
         name: newTemplateName,
-        content: ''
+        content: '',
+        titleWordLimit: 10
       }
       setTemplates([...templates, newTemplate])
       setActiveTemplate(newTemplate.id)
-      setNewTemplateName('')
+      setNewTemplateName(newTemplate.name)
       setEditingName(newTemplate.name)
+      setTitleWordLimit(newTemplate.titleWordLimit)
       setHasChanges(true)
     }
   }
@@ -73,6 +78,7 @@ export default function Page() {
     if (activeTemplate === id) {
       setActiveTemplate(updatedTemplates[0].id)
       setEditingName(updatedTemplates[0].name)
+      setTitleWordLimit(updatedTemplates[0].titleWordLimit)
     }
     setHasChanges(true)
   }
@@ -80,7 +86,7 @@ export default function Page() {
   const handleSaveTemplate = () => {
     const updatedTemplates = templates.map(template =>
       template.id === activeTemplate
-        ? { ...template, name: editingName }
+        ? { ...template, name: editingName, titleWordLimit: titleWordLimit }
         : template
     )
     setTemplates(updatedTemplates)
@@ -109,6 +115,7 @@ export default function Page() {
     const template = templates.find(t => t.id === id)
     if (template) {
       setEditingName(template.name)
+      setTitleWordLimit(template.titleWordLimit)
     }
   }
 
@@ -120,21 +127,27 @@ export default function Page() {
       if (templatesData.length > 0) {
         setActiveTemplate(templatesData[0].id)
         setEditingName(templatesData[0].name)
+        setTitleWordLimit(templatesData[0].titleWordLimit)
       }
     }
   }
 
   const fetchLicenseStatus = async () => {
-    const status = await getLicenseStatus()
-    setLicenseStatus(status)
-    const plan = await getCurrentPlan()
-    setCurrentPlan(plan)
-  }
+    const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
+    setLicenseStatus(licenseStatus);
+    setCurrentPlan(currentPlan);
+  };
 
   useEffect(() => {
     fetchLicenseStatus()
     fetchTemplates()
   }, [])
+
+  const handleWordLimitChange = (e) => {
+    const wordLimit = parseInt(e.target.value, 10);
+    setTitleWordLimit(wordLimit >= 0 ? wordLimit : 0); // Update state with entered value
+    setHasChanges(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -146,7 +159,7 @@ export default function Page() {
             </div>
           </div>
           <div className="flex items-center">
-          <LicenseStatusHeader/>
+            <LicenseStatusHeader />
           </div>
         </div>
       </header>
@@ -193,7 +206,7 @@ export default function Page() {
                   value={newTemplateName}
                   onChange={(e) => setNewTemplateName(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !isContentLocked && handleAddTemplate()}
-                  placeholder="New Template Name"
+                  placeholder="Enter Template Name"
                   className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
                   disabled={isContentLocked}
                 />
@@ -238,7 +251,18 @@ export default function Page() {
                   />
                 </div>
 
-               <Placeholders isContentLocked={isContentLocked} />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title Word Limit
+                  </label>
+                  <input
+                    type="number"
+                    value={titleWordLimit || ''}
+                    onChange={handleWordLimitChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <Placeholders isContentLocked={isContentLocked} />
               </div>
             </div>
 
