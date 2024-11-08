@@ -49,3 +49,15 @@ export const getShortUrl = async (trackingId: string) => {
     console.log("The links are: ", links);
     return links.shortUrl;
 };
+
+/**
+ * Function to shorten a product name
+ * @param productName the product name to shorten
+ * @param titleLimit the maximum number of words to include in the shortened name
+ * @returns the shortened product name
+ * 
+ * If 0, null, or undefined, return an empty string
+ * Otherwise, return the shortened product name
+ */
+export const shortenProductName = (productName: string, titleLimit: number | null | undefined) =>
+    titleLimit == null ? '' : productName.split(' ').slice(0, titleLimit).join(' ');
