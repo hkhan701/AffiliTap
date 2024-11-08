@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client"
 import { useState, useEffect } from 'react'
 import { FaPlus, FaTrash, FaSave, FaLock } from 'react-icons/fa'
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
+import { handlePurchaseRedirect } from "@/utils/utils"
 import { browserStorage } from "@/utils/browserStorage"
 import Footer from "./footer"
 import LicenseStatusHeader from "./licenseStatusHeader"
@@ -13,34 +14,32 @@ import "../../globals.css"
 
 export default function Page() {
   const defaultContent = '🎉 Limited Time Offer! 🎉\n{product_name}\n\n{discount_percentage} OFF!\nSave an extra ${coupon_$} with clip on coupon\n#ad\n{amz_link}'
-  const [templates, setTemplates] = useState([{ id: "default", name: 'Default Template', content: defaultContent, titleWordLimit: 10 }])
-  const [activeTemplate, setActiveTemplate] = useState(templates[0].id)
+  const defaultTemplate = {
+    id: "default",
+    name: 'Default Template',
+    content: defaultContent,
+    titleWordLimit: 10
+  }
+
+  const [templates, setTemplates] = useState([defaultTemplate])
+  const [activeTemplateId, setActiveTemplateId] = useState(defaultTemplate.id)
   const [newTemplateName, setNewTemplateName] = useState('')
-  const [editingName, setEditingName] = useState('')
-  const [titleWordLimit, setTitleWordLimit] = useState(10)
   const [hasChanges, setHasChanges] = useState(false)
   const [licenseStatus, setLicenseStatus] = useState("")
-  const [currentPlan, setCurrentPlan] = useState<string | null>(null)
+  const [currentPlan, setCurrentPlan] = useState(null)
 
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupMessage, setPopupMessage] = useState("")
   const [popupType, setPopupType] = useState<'success' | 'error'>('success')
 
   const isContentLocked = licenseStatus !== 'active'
+  const activeTemplate = templates.find(t => t.id === activeTemplateId) || defaultTemplate
 
   const handleClosePopup = () => setIsPopupOpen(false)
 
-  useEffect(() => {
-    const currentTemplate = templates.find(t => t.id === activeTemplate)
-    if (currentTemplate) {
-      setEditingName(currentTemplate.name)
-      setTitleWordLimit(currentTemplate.titleWordLimit)
-    }
-  }, [activeTemplate])
-
   const handleAddTemplate = () => {
-    const id = Date.now().toString(36) + Math.random().toString(36).substring(2)
     if (newTemplateName.trim()) {
+      const id = Date.now().toString(36) + Math.random().toString(36).substring(2)
       const newTemplate = {
         id,
         name: newTemplateName,
@@ -48,15 +47,13 @@ export default function Page() {
         titleWordLimit: 10
       }
       setTemplates([...templates, newTemplate])
-      setActiveTemplate(newTemplate.id)
-      setNewTemplateName(newTemplate.name)
-      setEditingName(newTemplate.name)
-      setTitleWordLimit(newTemplate.titleWordLimit)
+      setActiveTemplateId(newTemplate.id)
+      setNewTemplateName('')
       setHasChanges(true)
     }
   }
 
-  const handleDeleteTemplate = (id: string) => {
+  const handleDeleteTemplate = (id) => {
     const updatedTemplates = templates.filter(template => template.id !== id)
     if (updatedTemplates.length === 0) {
       setPopupMessage("Cannot delete the last template")
@@ -64,59 +61,48 @@ export default function Page() {
       setIsPopupOpen(true)
       return
     }
-    setTemplates(updatedTemplates)
+    
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
+      setTemplates(updatedTemplates)
+      if (activeTemplateId === id) {
+        setActiveTemplateId(updatedTemplates[0].id)
+      }
       setPopupMessage("Template deleted successfully")
       setPopupType('success')
-      setIsPopupOpen(true)
+      setHasChanges(true)
     } catch {
       setPopupMessage("Error deleting templates")
       setPopupType('error')
-      setIsPopupOpen(true)
     }
-    if (activeTemplate === id) {
-      setActiveTemplate(updatedTemplates[0].id)
-      setEditingName(updatedTemplates[0].name)
-      setTitleWordLimit(updatedTemplates[0].titleWordLimit)
-    }
-    setHasChanges(true)
+    setIsPopupOpen(true)
   }
 
   const handleSaveTemplate = () => {
     const updatedTemplates = templates.map(template =>
-      template.id === activeTemplate
-        ? { ...template, name: editingName, titleWordLimit: titleWordLimit }
-        : template
+      template.id === activeTemplateId ? activeTemplate : template
     )
-    setTemplates(updatedTemplates)
+    
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
+      setTemplates(updatedTemplates)
       setPopupMessage("Template saved successfully")
       setPopupType('success')
-      setIsPopupOpen(true)
       setHasChanges(false)
     } catch {
       setPopupMessage("Error saving templates")
       setPopupType('error')
-      setIsPopupOpen(true)
     }
+    setIsPopupOpen(true)
   }
 
-  const handleTemplateContentChange = (content: string) => {
+  const updateActiveTemplate = (updates) => {
     setTemplates(templates.map(template =>
-      template.id === activeTemplate ? { ...template, content } : template
+      template.id === activeTemplateId
+        ? { ...template, ...updates }
+        : template
     ))
     setHasChanges(true)
-  }
-
-  const handleTemplateChange = (id: string) => {
-    setActiveTemplate(id)
-    const template = templates.find(t => t.id === id)
-    if (template) {
-      setEditingName(template.name)
-      setTitleWordLimit(template.titleWordLimit)
-    }
   }
 
   const fetchTemplates = async () => {
@@ -125,9 +111,7 @@ export default function Page() {
       const templatesData = JSON.parse(storedTemplates)
       setTemplates(templatesData)
       if (templatesData.length > 0) {
-        setActiveTemplate(templatesData[0].id)
-        setEditingName(templatesData[0].name)
-        setTitleWordLimit(templatesData[0].titleWordLimit)
+        setActiveTemplateId(templatesData[0].id)
       }
     }
   }
@@ -142,12 +126,6 @@ export default function Page() {
     fetchLicenseStatus()
     fetchTemplates()
   }, [])
-
-  const handleWordLimitChange = (e) => {
-    const wordLimit = parseInt(e.target.value, 10);
-    setTitleWordLimit(wordLimit >= 0 ? wordLimit : 0); // Update state with entered value
-    setHasChanges(true);
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -178,7 +156,7 @@ export default function Page() {
                 </p>
                 <button
                   className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
-                  onClick={() => window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank")}
+                  onClick={handlePurchaseRedirect}
                 >
                   Upgrade Now
                 </button>
@@ -190,8 +168,8 @@ export default function Page() {
             <div className="flex items-center justify-between">
               <div className="flex-1 max-w-md">
                 <select
-                  value={activeTemplate}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
+                  value={activeTemplateId}
+                  onChange={(e) => setActiveTemplateId(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   disabled={isContentLocked}
                 >
@@ -227,11 +205,8 @@ export default function Page() {
                 </label>
                 <input
                   type="text"
-                  value={editingName}
-                  onChange={(e) => {
-                    setEditingName(e.target.value)
-                    setHasChanges(true)
-                  }}
+                  value={activeTemplate.name}
+                  onChange={(e) => updateActiveTemplate({ name: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
                   disabled={isContentLocked}
                 />
@@ -243,8 +218,8 @@ export default function Page() {
                     Template Content
                   </label>
                   <textarea
-                    value={templates.find(t => t.id === activeTemplate)?.content || ''}
-                    onChange={(e) => handleTemplateContentChange(e.target.value)}
+                    value={activeTemplate.content}
+                    onChange={(e) => updateActiveTemplate({ content: e.target.value })}
                     placeholder={defaultContent}
                     className="w-full h-64 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono disabled:bg-gray-100 disabled:text-gray-500"
                     disabled={isContentLocked}
@@ -257,9 +232,10 @@ export default function Page() {
                   </label>
                   <input
                     type="number"
-                    value={titleWordLimit || ''}
-                    onChange={handleWordLimitChange}
+                    value={activeTemplate.titleWordLimit}
+                    onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    disabled={isContentLocked}
                   />
                 </div>
                 <Placeholders isContentLocked={isContentLocked} />
@@ -278,7 +254,7 @@ export default function Page() {
                 <FaSave className="mr-2" /> Save
               </button>
               <button
-                onClick={() => handleDeleteTemplate(activeTemplate)}
+                onClick={() => handleDeleteTemplate(activeTemplateId)}
                 disabled={isContentLocked}
                 className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
