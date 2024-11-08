@@ -4,8 +4,8 @@ import { FaCopy } from 'react-icons/fa'
 export default function Placeholders({ isContentLocked = false } ) {
     const [copiedPlaceholder, setCopiedPlaceholder] = useState<string | null>(null);
     const placeholders: { key: string; description: string }[] = [
-        { key: '{product_title}', description: 'Product title' },
-        { key: '{final_price}', description: 'Price without coupons or promo codes' },
+        { key: '{product_name}', description: 'Product name' },
+        { key: '{current_price}', description: 'Price without coupons or promo codes' },
         { key: '{list_price}', description: 'Original price of the product' },
         { key: '{discount_percentage}', description: 'Discount percentage' },
         { key: '{coupon_$}', description: 'Coupon dollar amount off' },
