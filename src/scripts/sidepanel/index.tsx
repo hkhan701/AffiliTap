@@ -3,18 +3,21 @@ import { useEffect, useState } from "react";
 import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes, FaCopy } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handlePurchaseRedirect, handleAddTemplate } from "@/utils/utils";
+import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
+// @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
 import "../../globals.css";
+import { get } from "http";
 
 interface Template {
     id: string;
     name: string;
     content: string;
+    titleWordLimit: number;
 }
 
 export default function SidePanel() {
@@ -32,6 +35,8 @@ export default function SidePanel() {
     const [templates, setTemplates] = useState<Template[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
+    const [previewText, setPreviewText] = useState<string>("");
+
     const handleOpenSettings = () => setIsSettingsOpen(true);
     const handleBack = () => setIsSettingsOpen(false);
     const handleClosePopup = () => setIsPopupOpen(false);
@@ -47,7 +52,7 @@ export default function SidePanel() {
             }
         }
     };
-    
+
     const handleTemplateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedTemplate = templates.find(template => template.id === event.target.value);
         if (selectedTemplate) {
@@ -82,19 +87,13 @@ export default function SidePanel() {
     };
 
     const fetchLicenseStatus = async () => {
-        const status = await getLicenseStatus();
-        setLicenseStatus(status);
-
-        const plan = await getCurrentPlan();
-        setCurrentPlan(plan);
+        const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
+        setLicenseStatus(licenseStatus);
+        setCurrentPlan(currentPlan);
     };
 
-    const handleProductDataUpdate = (message) => {
-        if (message.action === "UPDATE_PRODUCT_DATA") {
-            console.log("Updated product data:", message.data);
-            setProductData(message.data);
-        }
-    };
+    const handleProductDataUpdate = ({ action, data }: { action: string; data: any; }) =>
+        action === "UPDATE_PRODUCT_DATA" && setProductData(data);
 
     useEffect(() => {
         getTrackingIds();
@@ -116,10 +115,7 @@ export default function SidePanel() {
             if (result) {
                 setPopupMessage("License activated successfully!");
                 setPopupType('success');
-                const status = await getLicenseStatus();
-                const plan = await getCurrentPlan();
-                setLicenseStatus(status);
-                setCurrentPlan(plan);
+                await fetchLicenseStatus();
             } else {
                 setPopupMessage("License activation failed. Please check your key.");
                 setPopupType('error');
@@ -132,12 +128,42 @@ export default function SidePanel() {
         setLoading(false);
     };
 
-    const sampleText = "test"
-
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    // This effect will update the preview text whenever product data, the selected template, or templates change
+    useEffect(() => {
+        if (templates.length > 0) {
+            const selectedTemplateContent = templates.find(t => t.id === selectedTemplate)?.content || "";
+            generatePreviewText(selectedTemplateContent).then((previewText) => {
+                setPreviewText(previewText);
+            });
+        }
+    }, [productData, selectedTemplate, templates]);
+
+    const generatePreviewText = async (templateContent: string): Promise<string> => {
+        if (!productData) {
+            return "No product data available. Loading...";
+        }
+
+        const amz_link = await getShortUrl(trackingIds[0]);
+        const titleLimit = templates.find(t => t.id === selectedTemplate)?.titleWordLimit;
+        const limitedTitle = shortenProductName(productData.product_name, titleLimit);
+
+        return templateContent
+            .replace(/{product_name}/g, limitedTitle || "")
+            .replace(/{current_price}/g, productData.current_price || "")
+            .replace(/{list_price}/g, productData.list_price || "")
+            .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
+            .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+            .replace(/{coupon_%}/g, productData.coupon_percentage || "")
+            .replace(/{promo_code}/g, productData.promo_code || "")
+            .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
+            .replace(/{amz_link}/g, amz_link || "");
+
     };
 
     return (
@@ -186,7 +212,7 @@ export default function SidePanel() {
                                 className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center"
                             >
                                 <FaPlus className="mr-2 h-4 w-4" />
-                                Add Template
+                                Create New Template
                             </button>
                             <button
                                 onClick={handleOpenSettings}
@@ -197,6 +223,7 @@ export default function SidePanel() {
                             </button>
 
                             <div className="w-full">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4">Select your Template</h2>
                                 <select
                                     value={selectedTemplate}
                                     onChange={handleTemplateChange}
@@ -218,13 +245,13 @@ export default function SidePanel() {
                             <div className="w-full bg-white rounded-lg shadow-md p-4">
                                 <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
                                 <div className="bg-gray-100 rounded-lg p-4 mb-2">
-                                    <pre className="text-sm whitespace-pre-wrap">{sampleText}</pre>
+                                    <pre className="text-sm whitespace-pre-wrap">{previewText}</pre>
                                 </div>
-                                <div className="flex justify-start">
+                                <div className="flex justify-center">
                                     <button
-                                        onClick={() => copyToClipboard(sampleText)}
+                                        onClick={() => copyToClipboard(previewText)}
                                         className={
-                                            `px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${copied ? 'animate-pulse text-green-500' : ''}`
+                                            `px-2 py-1 text-md font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${copied ? 'animate-pulse text-green-500' : ''}`
                                         }
                                         disabled={isContentLocked}
                                     >
@@ -245,6 +272,16 @@ export default function SidePanel() {
                             ) : (
                                 <p>No product data available.</p>
                             )}
+                            {trackingIds ? (
+                                <ul>
+                                    {trackingIds.map((id) => (
+                                        <li key={id}>{id}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No tracking IDs available.</p>
+                            )}
+
 
                         </>
                     )}
