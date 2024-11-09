@@ -40,11 +40,11 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
   });
 
   // Check if the active tab URL is an Amazon product page
-  if (tab.url && tab.url.includes("amazon.ca")) {
+  if (tab.url && (tab.url.includes("amazon.ca") || tab.url.includes("amazon.com"))) {
     try {
       // Request product data from the content script in the active tab
       const response = await browser.tabs.sendMessage(tab.id, { action: "REQUEST_PRODUCT_DATA" });
-      
+
       // Notify the side panel of the updated product data
       browser.runtime.sendMessage({ action: "UPDATE_PRODUCT_DATA", data: response.data });
     } catch (error) {

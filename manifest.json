@@ -4,7 +4,7 @@
   "description": "A tool to help you copy amazon posts easily and quickly",
   "version": "1.0",
   "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms", "sidePanel"],
-  "host_permissions": ["*://www.amazon.ca/*", "*://www.google.ca/*"],
+  "host_permissions": ["*://www.amazon.ca/*", "*://www.amazon.com/*"],
   "action": {
     "default_icon": {
       "16": "assets/images/icon-16.png"
@@ -25,6 +25,6 @@
   },
   "side_panel": {
         "default_path": "sidepanel/index.html",
-        "matches": ["*://www.amazon.ca/*", "*://*.amazon.ca/*"] 
+        "matches": ["*://www.amazon.ca/*", "*://*.amazon.ca/*","*://www.amazon.com/*", "*://*.amazon.com/*" ] 
     }
 }

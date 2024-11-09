@@ -151,7 +151,7 @@ export default function SidePanel() {
             .replace(/{list_price}/g, productData.list_price || "")
             .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
             .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-            .replace(/{coupon_%}/g, productData.coupon_percentage || "")
+            .replace(/{coupon_%}/g, productData.coupon_percent || "")
             .replace(/{promo_code}/g, productData.promo_code || "")
             .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
             .replace(/{amz_link}/g, amz_link || "");
