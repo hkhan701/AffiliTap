@@ -11,14 +11,17 @@ import InfoPopup from '../popup/infoPopup'
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
+import { getTrackingIds } from "@/utils/utils"
 
 export default function Page() {
+  const [trackingIds, setTrackingIds] = useState([])
   const defaultContent = '🎉 Limited Time Offer! 🎉\n{product_name}\n\n{discount_percentage} OFF!\nSave an extra ${coupon_$} with clip on coupon\n#ad\n{amz_link}'
   const defaultTemplate = {
     id: "default",
     name: 'Default Template',
     content: defaultContent,
-    titleWordLimit: 10
+    titleWordLimit: 10,
+    trackingId: trackingIds[0] || ''
   }
 
   const [templates, setTemplates] = useState([defaultTemplate])
@@ -44,7 +47,8 @@ export default function Page() {
         id,
         name: newTemplateName,
         content: '',
-        titleWordLimit: 10
+        titleWordLimit: 10,
+        trackingId: trackingIds[0] || ''
       }
       setTemplates([...templates, newTemplate])
       setActiveTemplateId(newTemplate.id)
@@ -61,7 +65,7 @@ export default function Page() {
       setIsPopupOpen(true)
       return
     }
-    
+
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
       setTemplates(updatedTemplates)
@@ -70,7 +74,6 @@ export default function Page() {
       }
       setPopupMessage("Template deleted successfully")
       setPopupType('success')
-      setHasChanges(true)
     } catch {
       setPopupMessage("Error deleting templates")
       setPopupType('error')
@@ -82,7 +85,7 @@ export default function Page() {
     const updatedTemplates = templates.map(template =>
       template.id === activeTemplateId ? activeTemplate : template
     )
-    
+
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
       setTemplates(updatedTemplates)
@@ -125,10 +128,13 @@ export default function Page() {
   useEffect(() => {
     fetchLicenseStatus()
     fetchTemplates()
+    getTrackingIds().then((ids) => setTrackingIds(ids));
   }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
+
+      {/* Header */}
       <header className="bg-blue-100 shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
@@ -143,24 +149,35 @@ export default function Page() {
       </header>
 
       <main className="flex-grow container mx-auto px-4 py-8">
+
         <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <ContentLockOverlay isContentLocked={isContentLocked}/>
+        <ContentLockOverlay isContentLocked={isContentLocked} />
+
+          {/* Edit Template Header */}
+          <div className="border-b bg-blue-100 px-6 py-4 rounded-lg">
+            <div className="flex items-center justify-start gap-3">
+              <h2 className="text-lg font-medium">Edit Template:</h2>
+              <div className="flex gap-2">
+                <div className="flex-1 max-w-md">
+                  <select
+                    value={activeTemplateId}
+                    onChange={(e) => setActiveTemplateId(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    disabled={isContentLocked}
+                  >
+                    {templates.map(template => (
+                      <option key={template.id} value={template.id}>{template.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+
+            <div className="flex items-center justify-between pt-4">
               <div className="flex-1 max-w-md">
-                <select
-                  value={activeTemplateId}
-                  onChange={(e) => setActiveTemplateId(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
-                  disabled={isContentLocked}
-                >
-                  {templates.map(template => (
-                    <option key={template.id} value={template.id}>{template.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center ml-4">
                 <input
                   type="text"
                   value={newTemplateName}
@@ -181,47 +198,79 @@ export default function Page() {
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Template Name
-                </label>
-                <input
-                  type="text"
-                  value={activeTemplate.name}
-                  onChange={(e) => updateActiveTemplate({ name: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                  disabled={isContentLocked}
-                />
-              </div>
 
-              <div className="flex gap-6">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Template Content
-                  </label>
-                  <textarea
-                    value={activeTemplate.content}
-                    onChange={(e) => updateActiveTemplate({ content: e.target.value })}
-                    placeholder={defaultContent}
-                    className="w-full h-64 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono disabled:bg-gray-100 disabled:text-gray-500"
-                    disabled={isContentLocked}
-                  />
+              {/* Content */}
+              <div className="grid grid-cols-12 gap-6">
+                {/* Left Column */}
+                <div className="col-span-8 space-y-4">
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Template Name
+                    </label>
+                    <input
+                      type="text"
+                      value={activeTemplate.name}
+                      onChange={(e) => updateActiveTemplate({ name: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                      disabled={isContentLocked}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Template Content
+                    </label>
+                    <textarea
+                      value={activeTemplate.content}
+                      onChange={(e) => updateActiveTemplate({ content: e.target.value })}
+                      placeholder={defaultContent}
+                      className="w-full h-64 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono disabled:bg-gray-100 disabled:text-gray-500"
+                      disabled={isContentLocked}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tracking ID
+                      </label>
+                      <select
+                        value={activeTemplate.trackingId}
+                        onChange={(e) => updateActiveTemplate({ trackingId: e.target.value })}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                        disabled={isContentLocked}
+                      >
+                        {trackingIds.map((id) => (
+                          <option key={id} value={id}>
+                            {id}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Title Word Limit
+                      </label>
+                      <input
+                        type="number"
+                        value={activeTemplate.titleWordLimit}
+                        onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        disabled={isContentLocked}
+                      />
+                    </div>
+                  </div>
+
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title Word Limit
-                  </label>
-                  <input
-                    type="number"
-                    value={activeTemplate.titleWordLimit}
-                    onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    disabled={isContentLocked}
-                  />
-                </div>
+                {/* Right Column */}
+                <div className="col-span-4 justify-end">
                 <Placeholders isContentLocked={isContentLocked} />
+                </div>
+                
               </div>
+  
             </div>
 
             <div className="flex justify-start space-x-3">

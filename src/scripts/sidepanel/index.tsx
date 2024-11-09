@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes, FaCopy } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName } from "@/utils/utils";
+import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, getTrackingIds } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
@@ -19,6 +19,7 @@ interface Template {
     name: string;
     content: string;
     titleWordLimit: number;
+    trackingId: string;
 }
 
 export default function SidePanel() {
@@ -31,7 +32,6 @@ export default function SidePanel() {
     const [popupMessage, setPopupMessage] = useState("");
     const [popupType, setPopupType] = useState<'success' | 'error'>('success');
     const [productData, setProductData] = useState(null);
-    const [trackingIds, setTrackingIds] = useState([]);
     const [copied, setCopied] = useState(false)
     const [templates, setTemplates] = useState<Template[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -64,14 +64,6 @@ export default function SidePanel() {
 
     const isContentLocked = licenseStatus !== 'active';
 
-    const getTrackingIds = async () => {
-        // for US: https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1
-        const response = await fetch(`https://www.amazon.ca/associates/sitestripe/getStoreTagMap?marketplaceId=7`);
-        const data = await response.json();
-        const trackingIds = Object.values(data.storeTagMap).flat();
-        setTrackingIds(trackingIds);
-    };
-
     const fetchProductData = async () => {
         const tabs = await browser.tabs.query({ active: true, currentWindow: true });
         const activeTab = tabs[0];
@@ -97,7 +89,6 @@ export default function SidePanel() {
         action === "UPDATE_PRODUCT_DATA" && setProductData(data);
 
     useEffect(() => {
-        getTrackingIds();
         fetchProductData();
         fetchLicenseStatus();
         fetchTemplates();
@@ -149,10 +140,10 @@ export default function SidePanel() {
         if (!productData) {
             return "No product data available. Loading...";
         }
-
-        const amz_link = await getShortUrl(trackingIds[0]);
-        const titleLimit = templates.find(t => t.id === selectedTemplate)?.titleWordLimit;
-        const limitedTitle = shortenProductName(productData.product_name, titleLimit);
+        
+        const currentTemplate = templates.find(t => t.id === selectedTemplate);
+        const amz_link = await getShortUrl(currentTemplate?.trackingId);
+        const limitedTitle = shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
 
         return templateContent
             .replace(/{product_name}/g, limitedTitle || "")
@@ -274,17 +265,6 @@ export default function SidePanel() {
                             ) : (
                                 <p>No product data available.</p>
                             )}
-                            {trackingIds ? (
-                                <ul>
-                                    {trackingIds.map((id) => (
-                                        <li key={id}>{id}</li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No tracking IDs available.</p>
-                            )}
-
-
                         </>
                     )}
                 </div>
