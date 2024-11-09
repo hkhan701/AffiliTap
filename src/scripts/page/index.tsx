@@ -8,6 +8,7 @@ import ContentLockOverlay from "./contentLockOverlay"
 import LicenseStatusHeader from "./licenseStatusHeader"
 import Placeholders from "./placeholders"
 import InfoPopup from '../popup/infoPopup'
+import ConfirmModal from './confirmModal'
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
@@ -34,6 +35,7 @@ export default function Page() {
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupMessage, setPopupMessage] = useState("")
   const [popupType, setPopupType] = useState<'success' | 'error'>('success')
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const isContentLocked = licenseStatus !== 'active'
   const activeTemplate = templates.find(t => t.id === activeTemplateId) || defaultTemplate
@@ -57,28 +59,23 @@ export default function Page() {
     }
   }
 
-  const handleDeleteTemplate = (id: string) => {
-    const updatedTemplates = templates.filter(template => template.id !== id)
+  const handleConfirmDeleteTemplate = () => {
+    const updatedTemplates = templates.filter(template => template.id !== activeTemplateId)
     if (updatedTemplates.length === 0) {
       setPopupMessage("Cannot delete the last template")
       setPopupType('error')
       setIsPopupOpen(true)
       return
     }
-
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
       setTemplates(updatedTemplates)
-      if (activeTemplateId === id) {
-        setActiveTemplateId(updatedTemplates[0].id)
-      }
-      setPopupMessage("Template deleted successfully")
-      setPopupType('success')
+      setActiveTemplateId(updatedTemplates[0].id)
     } catch {
       setPopupMessage("Error deleting templates")
       setPopupType('error')
     }
-    setIsPopupOpen(true)
+    setIsConfirmModalOpen(false);
   }
 
   const handleSaveTemplate = () => {
@@ -285,7 +282,7 @@ export default function Page() {
                 <FaSave className="mr-2" /> Save
               </button>
               <button
-                onClick={() => handleDeleteTemplate(activeTemplateId)}
+                onClick={() => setIsConfirmModalOpen(true)}
                 disabled={isContentLocked}
                 className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
@@ -301,6 +298,13 @@ export default function Page() {
         message={popupMessage}
         type={popupType}
         onClose={handleClosePopup}
+      />
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this template?"
+        onConfirm={handleConfirmDeleteTemplate}
+        onCancel={() => setIsConfirmModalOpen(false)}
       />
       <Footer />
     </div>
