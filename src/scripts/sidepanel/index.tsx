@@ -1,9 +1,9 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCog, FaPlus, FaArrowLeft, FaCheck, FaTimes, FaCopy } from "react-icons/fa";
+import { FaCog, FaPlus, FaArrowLeft, FaCopy, FaInfoCircle } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, getTrackingIds } from "@/utils/utils";
+import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
@@ -140,7 +140,7 @@ export default function SidePanel() {
         if (!productData) {
             return "No product data available. Loading...";
         }
-        
+
         const currentTemplate = templates.find(t => t.id === selectedTemplate);
         const amz_link = await getShortUrl(currentTemplate?.trackingId);
         const limitedTitle = shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
@@ -233,10 +233,15 @@ export default function SidePanel() {
                                 </select>
                             </div>
 
-                            
+
                             <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
-                            <ContentLockOverlay isContentLocked={isContentLocked}/>
+                                <ContentLockOverlay isContentLocked={isContentLocked} />
                                 <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
+                                {templates.find(t => t.id === selectedTemplate)?.trackingId && (
+                                    <p className="text-sm text-gray-600 mb-2">
+                                        <strong>Current Tracking ID:</strong> {templates.find(t => t.id === selectedTemplate)?.trackingId}
+                                    </p>
+                                )}
                                 <div className="bg-gray-100 rounded-lg p-4 mb-2">
                                     <pre className="text-sm whitespace-pre-wrap">{previewText}</pre>
                                 </div>
@@ -269,6 +274,27 @@ export default function SidePanel() {
                     )}
                 </div>
             </div>
+
+            {/* Info Card */}
+            <div className="bg-white border-t border-gray-300 p-4 mt-4 text-sm text-gray-700 shadow-lg rounded-lg mx-4 mb-4">
+                <div className="flex items-center">
+                    <FaInfoCircle className="mr-2 h-4 w-4 text-blue-500" />
+                    <h3 className="text-lg font-semibold text-gray-800">Having Trouble with Data?</h3>
+                </div>
+                <p>
+                    Occasionally, retailers modify their websites layout, which may prevent AffiliTap from fetching data accurately..
+                    If your templates aren't filling in as expected, please help us investigate by sending an email with
+                    1-2 product links that are experiencing issues to{' '}
+                    <a
+                        href="mailto:affilitap@gmail.com"
+                        className="text-blue-600 hover:text-blue-800 font-semibold"
+                    >
+                        affilitap@gmail.com
+                    </a>
+                    . Let us know what data is missing so we can resolve the issue promptly!
+                </p>
+            </div>
+
             {/* License Error/Success Popup */}
             <InfoPopup
                 isOpen={isPopupOpen}
