@@ -20,6 +20,7 @@ interface Template {
     content: string;
     titleWordLimit: number;
     trackingId: string;
+    isDefault: boolean;
 }
 
 export default function SidePanel() {
@@ -48,8 +49,9 @@ export default function SidePanel() {
         if (storedTemplates) {
             const templatesData = JSON.parse(storedTemplates);
             setTemplates(templatesData);
-            if (templatesData.length > 0) {
-                setSelectedTemplate(templatesData[0].id);
+            const defaultTemplate = templatesData.find(t => t.isDefault) || templatesData[0]
+            if (defaultTemplate) {
+                setSelectedTemplate(defaultTemplate.id)
             }
         }
     };
@@ -224,7 +226,7 @@ export default function SidePanel() {
                                     {templates.length > 0 ? (
                                         templates.map((template) => (
                                             <option key={template.id} value={template.id}>
-                                                {template.name}
+                                                {template.name} {template.isDefault ? '(Default)' : ''}
                                             </option>
                                         ))
                                     ) : (
@@ -258,18 +260,6 @@ export default function SidePanel() {
                                     </button>
                                 </div>
                             </div>
-
-                            {productData ? (
-                                <ul>
-                                    {Object.entries(productData).map(([key, value]) => (
-                                        <li key={key}>
-                                            <strong>{key}:</strong> {JSON.stringify(value)}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No product data available.</p>
-                            )}
                         </>
                     )}
                 </div>

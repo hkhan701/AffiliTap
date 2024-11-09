@@ -114,7 +114,6 @@ function App() {
 
     const data = getProductData();
     if (data) {
-      console.log("Sending message:", data);
       browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
     }
 

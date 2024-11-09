@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client"
 import { useState, useEffect } from 'react'
-import { FaPlus, FaTrash, FaSave } from 'react-icons/fa'
+import { FaPlus, FaTrash, FaSave, FaStar } from 'react-icons/fa'
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
 import { browserStorage } from "@/utils/browserStorage"
 import Footer from "./footer"
@@ -22,7 +22,8 @@ export default function Page() {
     name: 'Default Template',
     content: defaultContent,
     titleWordLimit: 10,
-    trackingId: trackingIds[0] || ''
+    trackingId: trackingIds[0] || '',
+    isDefault: true
   }
 
   const [templates, setTemplates] = useState([defaultTemplate])
@@ -43,6 +44,12 @@ export default function Page() {
   const handleClosePopup = () => setIsPopupOpen(false)
 
   const handleAddTemplate = () => {
+    if (currentPlan === "Basic Plan" && templates.length >= 5) {
+      setPopupMessage("You can only add up to 5 templates on the Basic plan. Upgrade to the Pro plan to UNLIMITED templates.");
+      setPopupType("error");
+      setIsPopupOpen(true);
+      return;
+    }
     if (newTemplateName.trim()) {
       const id = Date.now().toString(36) + Math.random().toString(36).substring(2)
       const newTemplate = {
@@ -50,7 +57,8 @@ export default function Page() {
         name: newTemplateName,
         content: '',
         titleWordLimit: 10,
-        trackingId: trackingIds[0] || ''
+        trackingId: trackingIds[0] || '',
+        isDefault: false
       }
       setTemplates([...templates, newTemplate])
       setActiveTemplateId(newTemplate.id)
@@ -67,6 +75,12 @@ export default function Page() {
       setIsPopupOpen(true)
       return
     }
+
+    // If deleting the default template, set the first remaining template as default
+    if (activeTemplate.isDefault && updatedTemplates.length > 0) {
+      updatedTemplates[0].isDefault = true
+    }
+
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
       setTemplates(updatedTemplates)
@@ -110,9 +124,29 @@ export default function Page() {
     if (storedTemplates) {
       const templatesData = JSON.parse(storedTemplates)
       setTemplates(templatesData)
-      if (templatesData.length > 0) {
-        setActiveTemplateId(templatesData[0].id)
+      const defaultTemplate = templatesData.find(t => t.isDefault) || templatesData[0]
+      if (defaultTemplate) {
+        setActiveTemplateId(defaultTemplate.id)
       }
+    }
+  }
+
+  const handleSetDefaultTemplate = () => {
+    const updatedTemplates = templates.map(template => ({
+      ...template,
+      isDefault: template.id === activeTemplateId
+    }))
+    
+    try {
+      browserStorage.set('templates', JSON.stringify(updatedTemplates))
+      setTemplates(updatedTemplates)
+      setPopupMessage("Default template updated successfully")
+      setPopupType('success')
+      setIsPopupOpen(true)
+    } catch {
+      setPopupMessage("Error updating default template")
+      setPopupType('error')
+      setIsPopupOpen(true)
     }
   }
 
@@ -163,11 +197,24 @@ export default function Page() {
                     disabled={isContentLocked}
                   >
                     {templates.map(template => (
-                      <option key={template.id} value={template.id}>{template.name}</option>
+                      <option key={template.id} value={template.id}>
+                        {template.name} {template.isDefault ? '(Default)' : ''}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
+              <button
+              onClick={handleSetDefaultTemplate}
+              disabled={isContentLocked || activeTemplate.isDefault}
+              className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${
+                !activeTemplate.isDefault && !isContentLocked
+                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <FaStar className="mr-2" /> {activeTemplate.isDefault ? 'Default Template' : 'Set as Default'}
+            </button>
             </div>
           </div>
 
