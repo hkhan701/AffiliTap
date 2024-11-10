@@ -8,6 +8,11 @@ const HEADERS = {
 const BASIC_PLAN = "Basic Plan";
 const PRO_PLAN = "Pro Plan";
 
+const STORE_ID = 130802;
+const PRODUCT_ID = 377644;
+const VARIANT_PRO_PLAN_ID = 568085;
+const VARIANT_BASIC_PLAN_ID = 570940;
+
 /**
  * General function to handle API requests to Lemon Squeezy.
  * @param {string} endpoint - The API endpoint to hit (either 'verify', 'activate', or 'deactivate').
@@ -88,7 +93,7 @@ export const hasValidLicense = async (): Promise<boolean> => {
  */
 export const hasBasicSubscription = async (): Promise<boolean> => {
     const meta = await getMetaData();
-    return (await hasValidLicense()) && meta?.product_id === BASIC_PLAN;
+    return (await hasValidLicense()) && meta?.variant_id === VARIANT_BASIC_PLAN_ID;
 };
 
 /**
@@ -96,7 +101,7 @@ export const hasBasicSubscription = async (): Promise<boolean> => {
  */
 export const hasProfessionalSubscription = async (): Promise<boolean> => {
     const meta = await getMetaData();
-    return (await hasValidLicense()) && meta?.product_id === PRO_PLAN;
+    return (await hasValidLicense()) && meta?.variant_id === VARIANT_PRO_PLAN_ID;
 };
 
 export const getCurrentPlan = async (): Promise<string | null> => {
@@ -116,6 +121,9 @@ export const activateLicenseKey = async (licenseKey: string): Promise<boolean> =
     const data = await callLemonSqueezyAPI('activate', licenseKey, { instance_name });
 
     if (!data || !data.activated) return false;
+    // check that the store id matches
+    console.log(data.meta.store_id, STORE_ID, data.meta.product_id, PRODUCT_ID);
+    if (data.meta.store_id !== STORE_ID || data.meta.product_id !== PRODUCT_ID) return false;
 
     // Save the full data object in storage
     await saveLicenseData(data);
@@ -149,7 +157,7 @@ export const verifyLicenseKey = async (): Promise<boolean> => {
     if (!licenseKey || !instanceId) return false;
 
     const response = await callLemonSqueezyAPI('validate', licenseKey, { instance_id: instanceId});
-    if (response.valid && response.license_key.key === licenseKey && response.instance.id === instanceId) {
+    if (response.valid && response.license_key.key === licenseKey && response.instance.id === instanceId && response.meta.store_id === STORE_ID && response.meta.product_id === PRODUCT_ID) {
         // console.log('Valid license key. Saving to storage...');
         await saveLicenseData(response);
         return true;
