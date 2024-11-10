@@ -3,7 +3,7 @@
   "name": "AffiliTap",
   "description": "A tool to help you copy amazon posts easily and quickly",
   "version": "1.0",
-  "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms", "sidePanel"],
+  "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms", "sidePanel", "tabs"],
   "host_permissions": ["*://www.amazon.ca/*", "*://www.amazon.com/*"],
   "action": {
     "default_icon": {
