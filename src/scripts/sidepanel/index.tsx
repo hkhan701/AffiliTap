@@ -12,7 +12,6 @@ import ContentLockOverlay from "../page/contentLockOverlay";
 import logo from 'src/assets/images/logo.svg';
 
 import "../../globals.css";
-import { get } from "http";
 import Settings from "./settings";
 
 interface Template {
@@ -27,9 +26,7 @@ interface Template {
 export default function SidePanel() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [licenseStatus, setLicenseStatus] = useState("");
-    const [licenseKey, setLicenseKey] = useState("");
     const [currentPlan, setCurrentPlan] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
     const [popupType, setPopupType] = useState<'success' | 'error'>('success');
@@ -44,6 +41,12 @@ export default function SidePanel() {
     const handleOpenSettings = () => setIsSettingsOpen(true);
     const handleBack = () => setIsSettingsOpen(false);
     const handleClosePopup = () => setIsPopupOpen(false);
+
+    const PRO_ONLY_PLACEHOLDERS = ["{coupon_$}", "{coupon_%}", "{promo_code}", "{promo_code_%}"];
+
+    const checkForProPlaceholders = (templateContent: string): boolean => {
+        return PRO_ONLY_PLACEHOLDERS.some((placeholder) => templateContent?.includes(placeholder));
+    };
 
     const fetchTemplates = async () => {
         const storedTemplates = await browserStorage.get('templates');
@@ -125,17 +128,23 @@ export default function SidePanel() {
         const amz_link = await getShortUrl(currentTemplate?.trackingId);
         const limitedTitle = shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
 
-        return templateContent
+        let preview = templateContent
             .replace(/{product_name}/g, limitedTitle || "")
             .replace(/{current_price}/g, productData.current_price || "")
             .replace(/{list_price}/g, productData.list_price || "")
             .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
-            .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-            .replace(/{coupon_%}/g, productData.coupon_percent || "")
-            .replace(/{promo_code}/g, productData.promo_code || "")
-            .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
             .replace(/{amz_link}/g, amz_link || "");
 
+        // Only replace coupon and promo code placeholders if the user is on the Pro plan
+        if (currentPlan === "Pro Plan") {
+            preview = preview
+                .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+                .replace(/{coupon_%}/g, productData.coupon_percent || "")
+                .replace(/{promo_code}/g, productData.promo_code || "")
+                .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "");
+        }
+
+        return preview;
     };
 
     const copyImageToClipboard = async (imageUrl: string) => {
@@ -224,6 +233,13 @@ export default function SidePanel() {
                             <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
                                 <ContentLockOverlay isContentLocked={isContentLocked} />
                                 <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
+                                {/* Reminder for Pro-only placeholders */}
+                                {currentPlan !== "Pro Plan" && checkForProPlaceholders(templates.find(t => t.id === selectedTemplate)?.content) && (
+                                    <div className="mb-4 p-3 rounded-md bg-yellow-100 border border-yellow-300 text-yellow-800 flex items-center">
+                                        <FaInfoCircle className="mr-2" />
+                                        <span>You have used placeholders that are only available in the Pro plan. <button onClick={handleBillingRedirect} className="text-blue-600 underline">Upgrade to unlock</button>.</span>
+                                    </div>
+                                )}
                                 {templates.find(t => t.id === selectedTemplate)?.trackingId && (
                                     <p className="text-sm text-gray-600 mb-2">
                                         <strong>Current Tracking ID:</strong> {templates.find(t => t.id === selectedTemplate)?.trackingId}
