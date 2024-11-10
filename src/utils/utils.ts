@@ -83,7 +83,6 @@ export const getShortUrl = async (trackingId: string): Promise<string> => {
 
     const res = await fetch(linkToFetch);
     const links = await res.json();
-    console.log("The links are: ", links);
     return links.shortUrl;
 };
 

@@ -9,20 +9,18 @@ browser.runtime.onInstalled.addListener((): void => {
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'CHECK-LICENSE') {
-    console.log('Checking if there is a valid license...');
     await verifyLicenseKey();
   }
 });
 
 browser.alarms.create('CHECK-LICENSE', {
   when: Date.now() + 10,
-  periodInMinutes: 1,
-}) // validate license every 30 mins
+  periodInMinutes: 10,
+}) // validate license every 10 mins
 
 // Listen for product data updates from the content script
 browser.runtime.onMessage.addListener((message) => {
   if (message.action === "SEND_PRODUCT_DATA") {
-    console.log("Received product data from content script:", message.data);
     // Notify the side panel of the updated product data
     browser.runtime.sendMessage({ action: "UPDATE_PRODUCT_DATA", data: message.data });
   }

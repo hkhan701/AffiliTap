@@ -13,7 +13,7 @@ export const browserStorage = {
         return new Promise((resolve, reject) => {
             const data = { [key]: value };
             browser.storage.local.set(data).then(() => {
-                console.log(`Set ${key} to`, value);
+                // console.log(`Set ${key} to`, value);
                 resolve();
             }).catch((error) => {
                 reject(error);
@@ -29,7 +29,7 @@ export const browserStorage = {
     get: async (key: string): Promise<any> => {
         return new Promise((resolve, reject) => {
             browser.storage.local.get([key]).then((result) => {
-                console.log(`Got ${key}:`, result[key]);
+                // console.log(`Got ${key}:`, result[key]);
                 resolve(result[key]);
             }).catch((error) => {
                 reject(error);
@@ -45,7 +45,7 @@ export const browserStorage = {
     remove: async (key: string): Promise<void> => {
         return new Promise((resolve, reject) => {
             browser.storage.local.remove([key]).then((result) => {
-                console.log(`Removed ${key}:`, result[key]);
+                // console.log(`Removed ${key}:`, result[key]);
                 resolve(result[key]);
             }).catch((error) => {
                 reject(error);

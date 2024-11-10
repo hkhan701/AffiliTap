@@ -150,11 +150,11 @@ export const verifyLicenseKey = async (): Promise<boolean> => {
 
     const response = await callLemonSqueezyAPI('validate', licenseKey, { instance_id: instanceId});
     if (response.valid && response.license_key.key === licenseKey && response.instance.id === instanceId) {
-        console.log('Valid license key. Saving to storage...');
+        // console.log('Valid license key. Saving to storage...');
         await saveLicenseData(response);
         return true;
     } else {
-        console.log('Invalid license key. Removing from storage...');
+        // console.log('Invalid license key. Removing from storage...');
         await browserStorage.remove('licenseData');
         return false;
     }

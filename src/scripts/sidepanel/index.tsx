@@ -59,10 +59,6 @@ export default function SidePanel() {
     };
 
     const handleTemplateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedTemplate = templates.find(template => template.id === event.target.value);
-        if (selectedTemplate) {
-            console.log("The selected template name is: ", selectedTemplate.name);
-        }
         setSelectedTemplate(event.target.value);
     };
 
@@ -160,7 +156,6 @@ export default function SidePanel() {
                     [blob.type]: blob
                 })
             ]);
-            console.log('Image copied.');
             setImageCopied(true);
             setTimeout(() => setImageCopied(false), 2000);
         } catch (error) {
@@ -291,7 +286,7 @@ export default function SidePanel() {
                                                 disabled={currentPlan !== 'Pro Plan'}
                                             >
                                                 <FaCopy className="inline-block mr-1 h-3 w-3" />
-                                                {imageCopied ? 'Copied!' : 'Copy Image URL'}
+                                                {imageCopied ? 'Copied!' : 'Copy Image'}
                                             </button>
                                         </div>
                                     </>
