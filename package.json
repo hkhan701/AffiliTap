@@ -1,5 +1,5 @@
 {
-  "name": "chrome-extension-boilerplate",
+  "name": "affilitap",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -14,9 +14,9 @@
     "commit": "cz"
   },
   "author": {
-    "email": "duongductrong06@gmail.com",
-    "name": "Trong Duong",
-    "url": "https://danielll.dev"
+    "email": "affilitap@gmail.com",
+    "name": "AffiliTap",
+    "url": "https://affilitap.vercel.app/"
   },
   "license": "ISC",
   "dependencies": {
