@@ -1,5 +1,6 @@
 import { browser } from "webextension-polyfill-ts";
 import { getPage } from "@/utils/urls";
+import { browserStorage } from "@/utils/browserStorage";
 
 /**
  * Converts a JPEG image URL to a PNG data URL.
@@ -35,20 +36,20 @@ export const modifyImageLink = (link: string) => {
     // Find the positions of the last two decimal points
     const lastDotIndex = link.lastIndexOf(".");
     const secondLastDotIndex = link.substring(0, lastDotIndex).lastIndexOf(".");
-  
+
     if (lastDotIndex !== -1 && secondLastDotIndex !== -1) {
-      // Extract the base URL, replace portion, and extension
-      const baseUrl = link.substring(0, secondLastDotIndex);
-      const extension = link.substring(lastDotIndex);
-  
-      // Append _AC_SL1500_ before the extension
-      const newLink = baseUrl + "._AC_SL1500_" + extension;
-      return newLink;
+        // Extract the base URL, replace portion, and extension
+        const baseUrl = link.substring(0, secondLastDotIndex);
+        const extension = link.substring(lastDotIndex);
+
+        // Append _AC_SL1500_ before the extension
+        const newLink = baseUrl + "._AC_SL1500_" + extension;
+        return newLink;
     } else {
-      // Return the original link if two decimal points are not found
-      return link;
+        // Return the original link if two decimal points are not found
+        return link;
     }
-  }
+}
 
 /**
  * Gets a short URL for the currently active tab using the given tracking ID.
@@ -92,17 +93,29 @@ export const getShortUrl = async (trackingId: string): Promise<string> => {
  * @returns an array of tracking IDs.
  */
 export const getTrackingIds = async () => {
-    // for US: https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1
+    const caUrl = `https://www.amazon.ca/associates/sitestripe/getStoreTagMap?marketplaceId=7`;
+    const usUrl = `https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1`;
+  
     try {
-        const response = await fetch(`https://www.amazon.ca/associates/sitestripe/getStoreTagMap?marketplaceId=7`);
-        const data = await response.json();
-        const trackingIds = Object.values(data.storeTagMap).flat();
-        return trackingIds;
+      const [caResult, usResult] = await Promise.allSettled([
+        fetch(caUrl).then(response => response.json()),
+        fetch(usUrl).then(response => response.json()),
+      ]);
+  
+      const caTrackingIds = caResult.status === 'fulfilled'
+        ? Object.values(caResult.value.storeTagMap).flat().map(id => ({ id, country: 'CA' }))
+        : [];
+  
+      const usTrackingIds = usResult.status === 'fulfilled'
+        ? Object.values(usResult.value.storeTagMap).flat().map(id => ({ id, country: 'US' }))
+        : [];
+  
+      return [...caTrackingIds, ...usTrackingIds];
     } catch (error) {
-        console.error("Error fetching tracking IDs from Amazon Associates: ", error);
-        return [];
+      console.error("Unexpected error fetching tracking IDs: ", error);
+      return [];
     }
-};
+  };
 
 /**
  * Function to shorten a product name
@@ -114,7 +127,7 @@ export const getTrackingIds = async () => {
  * Otherwise, return the shortened product name
  */
 export const shortenProductName = (productName: string, titleLimit: number | null | undefined) =>
-    titleLimit == null ? '' : productName.split(' ').slice(0, titleLimit).join(' ');
+    productName == null || titleLimit == null ? '' : productName.split(' ').slice(0, titleLimit).join(' ');
 
 
 /**
@@ -131,5 +144,7 @@ async function md5Hash(message: string): Promise<string> {
 
 // Update with real purchase link
 export const handlePurchaseRedirect = () => { window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank") }
+
+export const handleBillingRedirect = () => { window.open("https://affilitap.lemonsqueezy.com/billing", "_blank") }
 
 export const handleAddTemplate = () => { browser.tabs.create({ url: browser.runtime.getURL(getPage("index.html")) }) }

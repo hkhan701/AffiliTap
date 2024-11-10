@@ -1,9 +1,9 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCog, FaPlus, FaArrowLeft, FaCopy, FaInfoCircle, FaImage, FaLock } from "react-icons/fa";
+import { FaCog, FaPlus, FaCopy, FaInfoCircle, FaImage, FaLock } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
-import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng } from "@/utils/utils";
+import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
+import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
@@ -13,6 +13,7 @@ import logo from 'src/assets/images/logo.svg';
 
 import "../../globals.css";
 import { get } from "http";
+import Settings from "./settings";
 
 interface Template {
     id: string;
@@ -103,26 +104,6 @@ export default function SidePanel() {
         };
     }, []);
 
-    const handleSaveLicense = async () => {
-        setLoading(true);
-        try {
-            const result = await activateLicenseKey(licenseKey);
-            if (result) {
-                setPopupMessage("License activated successfully!");
-                setPopupType('success');
-                await fetchLicenseStatus();
-            } else {
-                setPopupMessage("License activation failed. Please check your key.");
-                setPopupType('error');
-            }
-        } catch (error) {
-            setPopupMessage("There was an error activating the license. Please try again.");
-            setPopupType('error');
-        }
-        setIsPopupOpen(true);
-        setLoading(false);
-    };
-
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
@@ -162,8 +143,8 @@ export default function SidePanel() {
     };
 
     const copyImageToClipboard = async (imageUrl: string) => {
-        
-        if(currentPlan !== "Pro Plan"){
+
+        if (currentPlan !== "Pro Plan") {
             setPopupMessage("Upgrade to the Pro plan to copy images.");
             setPopupType('error');
             setIsPopupOpen(true);
@@ -199,34 +180,13 @@ export default function SidePanel() {
                 <div className="flex flex-col items-center space-y-8">
                     {isSettingsOpen ? (
                         <>
-                            <h2 className="text-xl font-semibold text-gray-800">Enter License Key</h2>
-                            <div className="flex flex-col space-y-2 w-full">
-                                <input
-                                    type="text"
-                                    placeholder="Enter your license key"
-                                    value={licenseKey}
-                                    onChange={(e) => setLicenseKey(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <button
-                                    onClick={handleSaveLicense}
-                                    className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                    disabled={loading}
-                                >
-                                    {loading ? "Activating..." : "Save"}
-                                </button>
-                            </div>
-                            <p className="text-sm text-gray-600">Don't have a license key?</p>
-                            <button
-                                onClick={handlePurchaseRedirect}
-                                className="w-full bg-white text-blue-500 font-semibold py-2 px-4 rounded-md border border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                            >
-                                Purchase a license
-                            </button>
-                            <button onClick={handleBack} className="mt-4 text-gray-600 hover:text-gray-800">
-                                <FaArrowLeft className="inline-block mr-2 h-4 w-4" />
-                                Back
-                            </button>
+                            <Settings
+                                onBack={handleBack}
+                                onLicenseUpdate={({ licenseStatus, currentPlan }) => {
+                                    setLicenseStatus(licenseStatus);
+                                    setCurrentPlan(currentPlan);
+                                }}
+                            />
                         </>
                     ) : (
                         <>
@@ -348,26 +308,31 @@ export default function SidePanel() {
                         </>
                     )}
                 </div>
-            </div>
 
-            {/* Info Card */}
-            <div className="bg-white border-t border-gray-300 p-4 mt-4 text-sm text-gray-700 shadow-lg rounded-lg mx-4 mb-4">
-                <div className="flex items-center">
-                    <FaInfoCircle className="mr-2 h-4 w-4 text-blue-500" />
-                    <h3 className="text-lg font-semibold text-gray-800">Having Trouble with Data?</h3>
+                {/* Info Card */}
+                <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg mt-8">
+                    <div className="p-4 border-b">
+                        <h2 className="text-lg font-semibold">
+                            <FaInfoCircle className="inline-block mr-2 text-blue-500 mb-1" />
+                            Having Trouble with Data?
+                        </h2>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <p className="text-sm text-gray-600">
+                            Occasionally, retailers modify their websites layout, which may prevent AffiliTap from fetching data accurately..
+                            If your templates aren't filling in as expected, please help us investigate by sending an email with
+                            1-2 product links that are experiencing issues to{' '}
+                            <a
+                                href="mailto:affilitap@gmail.com"
+                                className="text-blue-600 hover:text-blue-800 font-semibold"
+                            >
+                                affilitap@gmail.com
+                            </a>
+                            . Let us know what data is missing so we can resolve the issue promptly!
+                        </p>
+                    </div>
                 </div>
-                <p>
-                    Occasionally, retailers modify their websites layout, which may prevent AffiliTap from fetching data accurately..
-                    If your templates aren't filling in as expected, please help us investigate by sending an email with
-                    1-2 product links that are experiencing issues to{' '}
-                    <a
-                        href="mailto:affilitap@gmail.com"
-                        className="text-blue-600 hover:text-blue-800 font-semibold"
-                    >
-                        affilitap@gmail.com
-                    </a>
-                    . Let us know what data is missing so we can resolve the issue promptly!
-                </p>
+
             </div>
 
             {/* License Error/Success Popup */}

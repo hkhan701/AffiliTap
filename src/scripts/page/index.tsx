@@ -136,7 +136,7 @@ export default function Page() {
       ...template,
       isDefault: template.id === activeTemplateId
     }))
-    
+
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
       setTemplates(updatedTemplates)
@@ -182,7 +182,7 @@ export default function Page() {
       <main className="flex-grow container mx-auto px-4 py-8">
 
         <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <ContentLockOverlay isContentLocked={isContentLocked} />
+          <ContentLockOverlay isContentLocked={isContentLocked} />
 
           {/* Edit Template Header */}
           <div className="border-b bg-blue-100 px-6 py-4 rounded-lg">
@@ -205,16 +205,15 @@ export default function Page() {
                 </div>
               </div>
               <button
-              onClick={handleSetDefaultTemplate}
-              disabled={isContentLocked || activeTemplate.isDefault}
-              className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${
-                !activeTemplate.isDefault && !isContentLocked
-                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              <FaStar className="mr-2" /> {activeTemplate.isDefault ? 'Default Template' : 'Set as Default'}
-            </button>
+                onClick={handleSetDefaultTemplate}
+                disabled={isContentLocked || activeTemplate.isDefault}
+                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${!activeTemplate.isDefault && !isContentLocked
+                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+              >
+                <FaStar className="mr-2" /> {activeTemplate.isDefault ? 'Default Template' : 'Set as Default'}
+              </button>
             </div>
           </div>
 
@@ -285,12 +284,15 @@ export default function Page() {
                         className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                         disabled={isContentLocked}
                       >
-                        {trackingIds.map((id) => (
-                          <option key={id} value={id}>
-                            {id}
+
+                        {/* Map over trackingIds with country labels */}
+                        {trackingIds.map(({ id, country }) => (
+                          <option key={`${id}-${country}`} value={id}>
+                            {id} ({country})
                           </option>
                         ))}
                       </select>
+                      <p className="text-sm text-gray-500 mt-1">The country associated is listed beside the tracking ID for reference.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -310,11 +312,11 @@ export default function Page() {
 
                 {/* Right Column */}
                 <div className="col-span-4 justify-end">
-                <Placeholders isContentLocked={isContentLocked} />
+                  <Placeholders isContentLocked={isContentLocked} />
                 </div>
-                
+
               </div>
-  
+
             </div>
 
             <div className="flex justify-start space-x-3">

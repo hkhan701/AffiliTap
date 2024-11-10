@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
-
 import { browser } from "webextension-polyfill-ts"
 import { verifyLicenseKey } from "@/utils/license";
 import { get } from "http";
 
-browser.runtime.onInstalled.addListener((): void => {
-  console.log("🦄", "extension installed")
+browser.runtime.onInstalled.addListener((): void => { 
+  console.log('AffiliTap is installed!');
 })
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
@@ -33,7 +32,7 @@ browser.runtime.onMessage.addListener((message) => {
 browser.tabs.onActivated.addListener(async (activeInfo) => {
   const tab = await browser.tabs.get(activeInfo.tabId);
   const tabId = activeInfo.tabId
-  
+
   await browser.scripting.executeScript({
     target: { tabId },
     files: ["content.js"]
@@ -58,7 +57,6 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
 const sidePanel = (browser as any).sidePanel;
 sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error(error));
-
 
 // Please remove default_popup from manifest.json
 // And you can enable this code to open to communicate with content
