@@ -1,9 +1,9 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCog, FaPlus, FaArrowLeft, FaCopy, FaInfoCircle } from "react-icons/fa";
+import { FaCog, FaPlus, FaArrowLeft, FaCopy, FaInfoCircle, FaImage, FaLock } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName } from "@/utils/utils";
+import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
@@ -34,6 +34,7 @@ export default function SidePanel() {
     const [popupType, setPopupType] = useState<'success' | 'error'>('success');
     const [productData, setProductData] = useState(null);
     const [copied, setCopied] = useState(false)
+    const [imageCopied, setImageCopied] = useState(false);
     const [templates, setTemplates] = useState<Template[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
@@ -160,6 +161,35 @@ export default function SidePanel() {
 
     };
 
+    const copyImageToClipboard = async (imageUrl: string) => {
+        
+        if(currentPlan !== "Pro Plan"){
+            setPopupMessage("Upgrade to the Pro plan to copy images.");
+            setPopupType('error');
+            setIsPopupOpen(true);
+            return;
+        }
+
+        try {
+            const image = await convertJpgToPng(imageUrl);
+            const response = await fetch(image);
+            const blob = await response.blob();
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    [blob.type]: blob
+                })
+            ]);
+            console.log('Image copied.');
+            setImageCopied(true);
+            setTimeout(() => setImageCopied(false), 2000);
+        } catch (error) {
+            console.error('Failed to copy image:', error);
+            setPopupMessage("Failed to copy image. Please try again.");
+            setPopupType('error');
+            setIsPopupOpen(true);
+        }
+    };
+
     return (
         <div className="bg-blue-100 h-full">
             <div className="p-4 border-b border-gray-200">
@@ -235,7 +265,7 @@ export default function SidePanel() {
                                 </select>
                             </div>
 
-
+                            {/* Post Preview */}
                             <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
                                 <ContentLockOverlay isContentLocked={isContentLocked} />
                                 <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
@@ -260,6 +290,61 @@ export default function SidePanel() {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Product Image Card */}
+                            <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
+                                <h2 className="text-lg font-semibold mb-2">Product Image</h2>
+                                {productData?.image_url ? (
+                                    <>
+                                        <div className="relative">
+                                            {/* Image container with conditional overlay */}
+                                            <div className={`relative ${currentPlan !== 'Pro Plan' ? 'grayscale opacity-50' : ''}`}>
+                                                <img
+                                                    src={productData.image_url}
+                                                    alt="Product"
+                                                    className="w-full h-48 object-contain rounded-lg bg-gray-50"
+                                                />
+                                            </div>
+
+                                            {/* Pro feature overlay for free users */}
+                                            {currentPlan !== 'Pro Plan' && (
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 rounded-lg">
+                                                    <FaLock className="h-6 w-6 text-white mb-2" />
+                                                    <p className="text-white text-center font-medium px-4">
+                                                        Upgrade to Pro to copy product images
+                                                    </p>
+                                                    <button
+                                                        onClick={handlePurchaseRedirect}
+                                                        className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
+                                                    >
+                                                        Upgrade Now
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Copy button - only active for pro users */}
+                                        <div className="flex justify-center mt-4">
+                                            <button
+                                                onClick={() => copyImageToClipboard(productData?.image_url)}
+                                                className={`px-2 py-1 text-md font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${imageCopied ? 'animate-pulse text-green-500' : ''}`}
+                                                disabled={currentPlan !== 'Pro Plan'}
+                                            >
+                                                <FaCopy className="inline-block mr-1 h-3 w-3" />
+                                                {imageCopied ? 'Copied!' : 'Copy Image URL'}
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-48 bg-gray-50 rounded-lg">
+                                        <FaImage className="h-8 w-8 text-gray-400 mb-2" />
+                                        <p className="text-gray-500 text-center">No product image available</p>
+                                        <p className="text-gray-400 text-sm text-center mt-1">Please make sure you're on a valid product page</p>
+                                    </div>
+                                )}
+                            </div>
+
+
                         </>
                     )}
                 </div>

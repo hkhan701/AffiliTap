@@ -2,6 +2,55 @@ import { browser } from "webextension-polyfill-ts";
 import { getPage } from "@/utils/urls";
 
 /**
+ * Converts a JPEG image URL to a PNG data URL.
+ * 
+ * @param {string} jpgUrl URL of the JPEG image to be converted.
+ * @returns {Promise<string>} Promise that resolves with the PNG data URL.
+ */
+export const convertJpgToPng = (jpgUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        var img = new Image();
+        img.onload = function () {
+            var canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            var pngDataUrl = canvas.toDataURL('image/png');
+            resolve(pngDataUrl);
+        };
+        img.src = jpgUrl;
+    });
+}
+
+/**
+ * Modifies an Amazon image link to have a larger size.
+ * Given a link like https://m.media-amazon.com/images/I/41oV5VxVpFL._AC_SY1000_.jpg,
+ * this function returns https://m.media-amazon.com/images/I/41oV5VxVpFL._AC_SL1500_.jpg.
+ * If the link does not have two decimal points, it is returned unchanged.
+ * @param {string} link
+ * @return {string}
+ */
+export const modifyImageLink = (link: string) => {
+    // Find the positions of the last two decimal points
+    const lastDotIndex = link.lastIndexOf(".");
+    const secondLastDotIndex = link.substring(0, lastDotIndex).lastIndexOf(".");
+  
+    if (lastDotIndex !== -1 && secondLastDotIndex !== -1) {
+      // Extract the base URL, replace portion, and extension
+      const baseUrl = link.substring(0, secondLastDotIndex);
+      const extension = link.substring(lastDotIndex);
+  
+      // Append _AC_SL1500_ before the extension
+      const newLink = baseUrl + "._AC_SL1500_" + extension;
+      return newLink;
+    } else {
+      // Return the original link if two decimal points are not found
+      return link;
+    }
+  }
+
+/**
  * Gets a short URL for the currently active tab using the given tracking ID.
  * @param {string} trackingId - Tracking ID to use for the short URL.
  * @returns {Promise<string>} The short URL.

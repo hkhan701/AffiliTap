@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { renderer } from "@/lib/renderer"
 import { browser } from "webextension-polyfill-ts"
+import { modifyImageLink } from "@/utils/utils"
 
 import "../../globals.css"
 import { get } from "http"
@@ -19,6 +20,7 @@ type Selectors = {
   promo_code: string;
   promo_code_percent_off: string;
   rating: string;
+  image_url: string;
 };
 
 const selectors: Selectors = {
@@ -31,6 +33,7 @@ const selectors: Selectors = {
   promo_code: 'span[id^="promoMessageCXCW"]',
   promo_code_percent_off: 'label[id^="greenBadgepctch"]',
   rating: "span.a-declarative > a > span.a-size-base.a-color-base",
+  image_url: "div.imgTagWrapper img",
 };
 
 const data: Record<string, string | null> = {
@@ -66,10 +69,8 @@ function App() {
       const element = document.querySelector(selector);
       data[key] = element ? element.textContent?.trim() || null : null;
     }
-
     const current_price = data.price_ca_whole && data.price_ca_fraction
-      ? parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) +
-      parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100
+      ? parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) + parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100
       : null;
 
     const list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
@@ -89,8 +90,11 @@ function App() {
       }
     );
 
-    const promo_code_percent_off = matchingElement ? matchingElement.innerHTML.replace('%', '') : null;
+    const promo_code_percent_off = matchingElement ? matchingElement.innerHTML.match(/(\d+)%/)[1] : null;
     const rating = data.rating ? parseFloat(data.rating) : null;
+    const imageElement = document.querySelector(selectors.image_url);
+    const image_url = imageElement ? imageElement.getAttribute("src") : null;
+    const updated_image_url = image_url ? modifyImageLink(image_url) : null;
 
     // Return structured data
     const productData = {
@@ -103,6 +107,7 @@ function App() {
       promo_code: promo_code,
       promo_code_percent_off: promo_code_percent_off,
       rating: rating,
+      image_url: updated_image_url
     };
 
     return productData;
@@ -111,7 +116,6 @@ function App() {
   // Please remove default_popup from manifest.json
   // And you can enable this code to open to communicate with content
   useEffect(() => {
-
     const data = getProductData();
     if (data) {
       browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
