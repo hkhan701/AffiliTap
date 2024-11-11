@@ -5,6 +5,10 @@
   "version": "1.0",
   "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms", "sidePanel", "tabs"],
   "host_permissions": ["*://www.amazon.ca/*", "*://www.amazon.com/*"],
+  "icons": {
+    "48": "assets/images/icon-16.png",
+    "128": "assets/images/icon128.png"
+  },
   "action": {
     "default_icon": {
       "16": "assets/images/icon-16.png"
