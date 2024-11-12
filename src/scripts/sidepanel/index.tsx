@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { FaCog, FaPlus, FaCopy, FaInfoCircle, FaImage, FaLock } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
-import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
+import { getLicenseStatus, getCurrentPlan, hasProfessionalSubscription } from "@/utils/license";
 import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
@@ -75,9 +75,13 @@ export default function SidePanel() {
             try {
                 // Send a message to the content script to get product data
                 const response = await browser.tabs.sendMessage(activeTab.id, { action: "REQUEST_PRODUCT_DATA" });
-                setProductData(response.data);
+                if (browser.runtime.lastError) {
+                    // console.log("Failed to fetch product data:", browser.runtime.lastError);
+                } else {
+                    setProductData(response.data);
+                }
             } catch (error) {
-                console.error("Error fetching product data:", error);
+                // console.log("Error fetching product data:", error);
             }
         }
     };
@@ -133,6 +137,7 @@ export default function SidePanel() {
             .replace(/{current_price}/g, productData.current_price || "")
             .replace(/{list_price}/g, productData.list_price || "")
             .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
+            .replace(/{rating}/g, productData.rating || "")
             .replace(/{amz_link}/g, amz_link || "");
 
         // Only replace coupon and promo code placeholders if the user is on the Pro plan
@@ -168,7 +173,6 @@ export default function SidePanel() {
             setImageCopied(true);
             setTimeout(() => setImageCopied(false), 2000);
         } catch (error) {
-            console.error('Failed to copy image:', error);
             setPopupMessage("Failed to copy image. Please try again.");
             setPopupType('error');
             setIsPopupOpen(true);

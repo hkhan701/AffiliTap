@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { renderer } from "@/lib/renderer"
 import { browser } from "webextension-polyfill-ts"
 import { modifyImageLink } from "@/utils/utils"
 
 import "../../globals.css"
-import { get } from "http"
 
 const containerId = "chrome-extension-boilerplate-container-id"
 const containerClassName = "chrome-extension-boilerplate-container-class"
@@ -32,7 +31,7 @@ const selectors: Selectors = {
   clip_coupon: 'label[for*="checkboxpct"][id*="couponTextpctch"]',
   promo_code: 'span[id^="promoMessageCXCW"]',
   promo_code_percent_off: 'label[id^="greenBadgepctch"]',
-  rating: "span.a-declarative > a > span.a-size-base.a-color-base",
+  rating: 'span[data-hook="rating-out-of-text"]',
   image_url: "div.imgTagWrapper img",
 };
 
@@ -91,7 +90,7 @@ function App() {
     );
 
     const promo_code_percent_off = matchingElement ? matchingElement.innerHTML.match(/(\d+)%/)[1] : null;
-    const rating = data.rating ? parseFloat(data.rating) : null;
+    const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
     const imageElement = document.querySelector(selectors.image_url);
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
     const updated_image_url = image_url ? modifyImageLink(image_url) : null;
@@ -116,22 +115,43 @@ function App() {
   // Please remove default_popup from manifest.json
   // And you can enable this code to open to communicate with content
   useEffect(() => {
-    const data = getProductData();
-    if (data) {
-      browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
-    }
+    try {
+      const data = getProductData();
+      if (data) {
+        browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
+      }
 
-    // Listen for messages from the background script
-    browser.runtime.onMessage.addListener(async (message, sender) => {
+    } catch (error) {
+      console.log("Unable to send product data, side panel not open",error);
+    }
+    
+    // try {
+    //   // Listen for messages from the background script
+    //   browser.runtime.onMessage.addListener(async (message) => {
+        
+    //   });
+      
+    // } catch (error) {
+    //   console.log(error);
+    // }
+
+
+    const handleListener = async (message) => {
       if (message.action === "REQUEST_PRODUCT_DATA") {
         const data = getProductData();
         return { data };
       }
-    });
-
+        };
+    
+        browser.runtime.onMessage.addListener(handleListener);
+    
+        return () => {
+          browser.runtime.onMessage.removeListener(handleListener);
+        };
+    
   }, []);
 
-  return null
+  return (<></>);
 }
 
 renderer(<App />, { tag, containerId, containerClassName })

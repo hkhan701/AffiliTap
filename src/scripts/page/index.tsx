@@ -22,7 +22,7 @@ export default function Page() {
     name: 'Default Template',
     content: defaultContent,
     titleWordLimit: 10,
-    trackingId: trackingIds[0] || '',
+    trackingId: trackingIds[0]?.id || '',
     isDefault: true
   }
 
@@ -57,7 +57,7 @@ export default function Page() {
         name: newTemplateName,
         content: '',
         titleWordLimit: 10,
-        trackingId: trackingIds[0] || '',
+        trackingId: trackingIds[0]?.id || '',
         isDefault: false
       }
       setTemplates([...templates, newTemplate])
@@ -124,7 +124,7 @@ export default function Page() {
     if (storedTemplates) {
       const templatesData = JSON.parse(storedTemplates)
       setTemplates(templatesData)
-      const defaultTemplate = templatesData.find(t => t.isDefault) || templatesData[0]
+      const defaultTemplate = templatesData.find(t => t?.isDefault) || templatesData[0]
       if (defaultTemplate) {
         setActiveTemplateId(defaultTemplate.id)
       }
@@ -198,7 +198,7 @@ export default function Page() {
                   >
                     {templates.map(template => (
                       <option key={template.id} value={template.id}>
-                        {template.name} {template.isDefault ? '(Default)' : ''}
+                        {template?.name} {template?.isDefault ? '(Default)' : ''}
                       </option>
                     ))}
                   </select>
@@ -206,13 +206,13 @@ export default function Page() {
               </div>
               <button
                 onClick={handleSetDefaultTemplate}
-                disabled={isContentLocked || activeTemplate.isDefault}
-                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${!activeTemplate.isDefault && !isContentLocked
+                disabled={isContentLocked || activeTemplate?.isDefault}
+                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${!activeTemplate?.isDefault && !isContentLocked
                     ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
-                <FaStar className="mr-2" /> {activeTemplate.isDefault ? 'Default Template' : 'Set as Default'}
+                <FaStar className="mr-2" /> {activeTemplate?.isDefault ? 'Default Template' : 'Set as Default'}
               </button>
             </div>
           </div>
