@@ -1,6 +1,5 @@
 import { browser } from "webextension-polyfill-ts";
 import { getPage } from "@/utils/urls";
-import { browserStorage } from "@/utils/browserStorage";
 
 /**
  * Converts a JPEG image URL to a PNG data URL.

@@ -78,7 +78,7 @@ function App() {
     const coupon_percent = data.clip_coupon ? parseFloat(data.clip_coupon.match(/([0-9.]+)%/)?.[1] || '0') : 0;
     const promo_code = extractPromoCode(data.promo_code);
 
-    const promo_code_id = parseInt(document.querySelector(selectors.promo_code)?.id.match(/\d+/g)?.toString() || '', 10); ;
+    const promo_code_id = parseInt(document.querySelector(selectors.promo_code)?.id.match(/\d+/g)?.toString() || '', 10);;
 
     const all_promo_code_percent_off = document.querySelectorAll(selectors.promo_code_percent_off);
     // Find the element directly by matching its id
@@ -115,40 +115,31 @@ function App() {
   // Please remove default_popup from manifest.json
   // And you can enable this code to open to communicate with content
   useEffect(() => {
-    try {
-      const data = getProductData();
-      if (data) {
-        browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
-      }
 
-    } catch (error) {
-      console.log("Unable to send product data, side panel not open",error);
+    const initialData = getProductData();
+    if (initialData.product_name) {
+      try {
+        browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data: initialData });
+      }
+      catch (error) {
+        console.log("Unable to send product data, side panel not open");
+      }
     }
-    
-    // try {
-    //   // Listen for messages from the background script
-    //   browser.runtime.onMessage.addListener(async (message) => {
-        
-    //   });
-      
-    // } catch (error) {
-    //   console.log(error);
-    // }
 
-
-    const handleListener = async (message) => {
+    // Listen for messages from the background script to retrieve product data on demand
+    browser.runtime.onMessage.addListener((message) => {
       if (message.action === "REQUEST_PRODUCT_DATA") {
-        const data = getProductData();
-        return { data };
-      }
-        };
-    
-        browser.runtime.onMessage.addListener(handleListener);
-    
-        return () => {
-          browser.runtime.onMessage.removeListener(handleListener);
-        };
-    
+        try {
+          const data = getProductData();
+          if (data) {
+            browser.runtime.sendMessage({ action: "SEND_PRODUCT_DATA", data });
+          }
+        } catch (error) {
+          console.log("Unable to send product data, side panel not open");
+        }
+        }
+    });
+
   }, []);
 
   return (<></>);

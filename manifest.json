@@ -3,7 +3,7 @@
   "name": "AffiliTap",
   "description": "AffiliTap instantly populates custom templates with Amazon product information, helping you create engaging posts in seconds.",
   "version": "1.0",
-  "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "alarms", "sidePanel"],
+  "permissions": ["storage", "activeTab", "clipboardWrite", "alarms", "sidePanel"],
   "host_permissions": ["*://www.amazon.ca/*", "*://www.amazon.com/*"],
   "icons": {
     "16": "assets/images/icon-16.png",

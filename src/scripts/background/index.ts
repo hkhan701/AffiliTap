@@ -35,8 +35,8 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
 
 browser.alarms.create('CHECK-LICENSE', {
   when: Date.now() + 10,
-  periodInMinutes: 1,
-}) // validate license every 1 mins
+  periodInMinutes: 10,
+}) // validate license every 10 mins
 
 // Listen for product data updates from the content script
 browser.runtime.onMessage.addListener(async (message) => {
@@ -50,34 +50,41 @@ browser.runtime.onMessage.addListener(async (message) => {
   }
 });
 
-// Handle tab switching to retrieve product data on Amazon product pages
+
+let activeAmazonTabId: number | null = null;
+
+// Listen for tab activation (switching between tabs)
 browser.tabs.onActivated.addListener((activeInfo) => {
   browser.tabs.get(activeInfo.tabId)
     .then((tab) => {
-      const tabId = activeInfo.tabId;
-
-      // Check if the active tab URL is an Amazon product page
-      if (tab.url && (tab.url.includes("amazon.ca") || tab.url.includes("amazon.com"))) {
-        return browser.scripting.executeScript({
-          target: { tabId },
-          files: ["content.js"]
-        })
-          .then(() => {
-            // Request product data from the content script in the active tab
-            return browser.tabs.sendMessage(tab.id, { action: "REQUEST_PRODUCT_DATA" });
-          })
-          .then((response) => {
-            // Notify the side panel of the updated product data
-            return browser.runtime.sendMessage({ action: "UPDATE_PRODUCT_DATA", data: response.data });
-          })
-          .catch((error) => {
-            // console.log("Failed to fetch product data:", error);
-          });
+      if (tab && tab.url && (tab.url.includes("amazon.ca") || tab.url.includes("amazon.com"))) {
+        // Set the new active Amazon tab
+        activeAmazonTabId = activeInfo.tabId;
+        
+        // Request product data immediately for already-loaded tabs
+        browser.tabs.sendMessage(activeAmazonTabId, { action: "REQUEST_PRODUCT_DATA" })
+          .catch(() => console.log("Failed to request data on activation:"));
+      } else {
+        // Clear activeAmazonTabId if it's not an Amazon page
+        activeAmazonTabId = null;
       }
     })
-    .catch((error) => console.log("Error retrieving tab information:", error));
+    .catch(() => console.log("Error retrieving tab information:"));
 });
 
+// Listen for tab updates to detect when a tab finishes loading
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (
+    tabId === activeAmazonTabId && // Only handle updates for the active Amazon tab
+    changeInfo.status === "complete" && // Wait for the tab to fully load
+    tab && tab.url && (tab.url.includes("amazon.ca") || tab.url.includes("amazon.com"))
+  ) {
+    // Request product data when the tab finishes loading
+    console.log("Requesting product data on update");
+    browser.tabs.sendMessage(tabId, { action: "REQUEST_PRODUCT_DATA" })
+      .catch(() => console.log("Failed to request data on update:"));
+  }
+});
 
 // Workaround for sidePanel not working
 const sidePanel = (browser as any).sidePanel;
