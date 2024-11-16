@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { FaCog, FaPlus, FaCopy, FaInfoCircle, FaImage, FaLock } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
-import { getLicenseStatus, getCurrentPlan, hasProfessionalSubscription } from "@/utils/license";
+import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
