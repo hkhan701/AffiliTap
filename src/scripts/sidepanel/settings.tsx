@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { activateLicenseKey, getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { handlePurchaseRedirect, handleBillingRedirect } from "@/utils/utils";
-import InfoPopup from '../popup/infoPopup';
+import InfoPopup from '../../components/infoPopup';
 
 interface SettingsProps {
   onBack: () => void;

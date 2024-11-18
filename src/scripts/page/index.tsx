@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react'
 import { FaPlus, FaTrash, FaSave, FaStar } from 'react-icons/fa'
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
 import { browserStorage } from "@/utils/browserStorage"
-import Footer from "./footer"
-import ContentLockOverlay from "./contentLockOverlay"
-import LicenseStatusHeader from "./licenseStatusHeader"
+import Footer from "../../components/footer"
+import ContentLockOverlay from "../../components/contentLockOverlay"
+import LicenseStatusHeader from "../../components/licenseStatusHeader"
 import Placeholders from "./placeholders"
-import InfoPopup from '../popup/infoPopup'
+import InfoPopup from '../../components/infoPopup'
 import ConfirmModal from './confirmModal'
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'

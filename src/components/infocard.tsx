@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { HelpCircle, Mail, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function InfoCard() {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-md transition-all duration-300 hover:shadow-lg mt-8 border border-gray-100">

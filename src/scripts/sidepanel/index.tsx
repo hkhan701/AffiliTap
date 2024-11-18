@@ -5,10 +5,10 @@ import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
-import InfoPopup from '../popup/infoPopup';
-import LicenseStatusHeader from "../page/licenseStatusHeader";
-import ContentLockOverlay from "../page/contentLockOverlay";
-import InfoCard from "./infocard";
+import InfoPopup from '../../components/infoPopup';
+import LicenseStatusHeader from "../../components/licenseStatusHeader";
+import ContentLockOverlay from "../../components/contentLockOverlay";
+import InfoCard from "../../components/infocard";
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
