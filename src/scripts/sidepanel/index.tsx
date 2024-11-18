@@ -8,6 +8,7 @@ import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../popup/infoPopup';
 import LicenseStatusHeader from "../page/licenseStatusHeader";
 import ContentLockOverlay from "../page/contentLockOverlay";
+import InfoCard from "./infocard";
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
@@ -324,29 +325,8 @@ export default function SidePanel() {
                     )}
                 </div>
 
-                {/* Info Card */}
-                <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg mt-8">
-                    <div className="p-4 border-b">
-                        <h2 className="text-lg font-semibold">
-                            <FaInfoCircle className="inline-block mr-2 text-blue-500 mb-1" />
-                            Having Trouble with Data?
-                        </h2>
-                    </div>
-                    <div className="p-6 space-y-4">
-                        <p className="text-sm text-gray-600">
-                            Occasionally, retailers modify their websites layout, which may prevent AffiliTap from fetching data accurately..
-                            If your templates aren't filling in as expected, please help us investigate by sending an email with
-                            1-2 product links that are experiencing issues to{' '}
-                            <a
-                                href="mailto:affilitap@gmail.com"
-                                className="text-blue-600 hover:text-blue-800 font-semibold"
-                            >
-                                affilitap@gmail.com
-                            </a>
-                            . Let us know what data is missing so we can resolve the issue promptly!
-                        </p>
-                    </div>
-                </div>
+                {/* Having trouble with data card */}
+                <InfoCard />
 
             </div>
 
