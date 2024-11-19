@@ -1,8 +1,9 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCog, FaPlus, FaCopy, FaInfoCircle, FaImage, FaLock } from "react-icons/fa";
+import { FaCopy, FaInfoCircle} from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
+import { Settings as SettingsIcon, Plus, ArrowLeft } from 'lucide-react';
 import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
 import InfoPopup from '../../components/infoPopup';
@@ -14,6 +15,7 @@ import logo from 'src/assets/images/logo.svg';
 
 import "../../globals.css";
 import Settings from "./settings";
+import ProductImageCard from "@/components/productImageCard";
 
 interface Template {
     id: string;
@@ -182,15 +184,30 @@ export default function SidePanel() {
 
     return (
         <div className="bg-blue-100 h-full">
-            <div className="p-4 border-b border-gray-200">
-                <img src={logo} alt="logo" width={200} />
+            <div className="p-3 border-b border-gray-200 flex items-center justify-between">
+                <img src={logo} alt="logo" width={120} />
+                {isSettingsOpen ? (
+                    <button
+                    onClick={handleBack}
+                    className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                    aria-label="Go back"
+                >
+                    <ArrowLeft className="h-5 w-5" />
+                </button>
+                ) : (
+                    <button
+                        onClick={handleOpenSettings}
+                        className="border-solid border-2 border-black bg-gray-100 text-gray-800 font-semibold p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
+                    >
+                        <SettingsIcon className="h-4 w-4" />
+                    </button>
+                )}
             </div>
-            <div className="p-4">
-                <div className="flex flex-col items-center space-y-8">
+            <div className="p-3">
+                <div className="flex flex-col items-center space-y-5">
                     {isSettingsOpen ? (
                         <>
                             <Settings
-                                onBack={handleBack}
                                 onLicenseUpdate={({ licenseStatus, currentPlan }) => {
                                     setLicenseStatus(licenseStatus);
                                     setCurrentPlan(currentPlan);
@@ -204,15 +221,8 @@ export default function SidePanel() {
                                 onClick={handleAddTemplate}
                                 className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center"
                             >
-                                <FaPlus className="mr-2 h-4 w-4" />
+                                <Plus className="mr-2 h-4 w-4" />
                                 Create New Template
-                            </button>
-                            <button
-                                onClick={handleOpenSettings}
-                                className="border-solid border-2 border-black w-full bg-gray-100 text-gray-800 font-semibold py-2 px-4 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
-                            >
-                                <FaCog className="mr-2 h-4 w-4" />
-                                Settings
                             </button>
 
                             <div className="w-full">
@@ -267,60 +277,12 @@ export default function SidePanel() {
                                 </div>
                             </div>
 
-                            {/* Product Image Card */}
-                            <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
-                                <h2 className="text-lg font-semibold mb-2">Product Image</h2>
-                                {productData?.image_url ? (
-                                    <>
-                                        <div className="relative">
-                                            {/* Image container with conditional overlay */}
-                                            <div className={`relative ${currentPlan !== 'Pro Plan' ? 'grayscale opacity-50' : ''}`}>
-                                                <img
-                                                    src={productData.image_url}
-                                                    alt="Product"
-                                                    className="w-full h-48 object-contain rounded-lg bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Pro feature overlay for free users */}
-                                            {currentPlan !== 'Pro Plan' && (
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 rounded-lg">
-                                                    <FaLock className="h-6 w-6 text-white mb-2" />
-                                                    <p className="text-white text-center font-medium px-4">
-                                                        Upgrade to Pro to copy product images
-                                                    </p>
-                                                    <button
-                                                        onClick={handlePurchaseRedirect}
-                                                        className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
-                                                    >
-                                                        Upgrade Now
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Copy button - only active for pro users */}
-                                        <div className="flex justify-center mt-4">
-                                            <button
-                                                onClick={() => copyImageToClipboard(productData?.image_url)}
-                                                className={`px-2 py-1 text-md font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${imageCopied ? 'animate-pulse text-green-500' : ''}`}
-                                                disabled={currentPlan !== 'Pro Plan'}
-                                            >
-                                                <FaCopy className="inline-block mr-1 h-3 w-3" />
-                                                {imageCopied ? 'Copied!' : 'Copy Image'}
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-48 bg-gray-50 rounded-lg">
-                                        <FaImage className="h-8 w-8 text-gray-400 mb-2" />
-                                        <p className="text-gray-500 text-center">No product image available</p>
-                                        <p className="text-gray-400 text-sm text-center mt-1">Please make sure you're on a valid product page</p>
-                                    </div>
-                                )}
-                            </div>
-
-
+                            <ProductImageCard
+                                productData={productData}
+                                currentPlan={currentPlan}
+                                copyImageToClipboard={copyImageToClipboard}
+                                imageCopied={imageCopied}
+                            />
                         </>
                     )}
                 </div>

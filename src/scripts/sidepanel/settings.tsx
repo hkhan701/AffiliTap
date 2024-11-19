@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { 
   KeyRound, 
-  ArrowLeft, 
   Loader2, 
   CreditCard, 
   ShoppingCart
@@ -11,11 +10,10 @@ import { handlePurchaseRedirect, handleBillingRedirect } from "@/utils/utils";
 import InfoPopup from '../../components/infoPopup';
 
 interface SettingsProps {
-  onBack: () => void;
   onLicenseUpdate: (data: { licenseStatus: string; currentPlan: string }) => void;
 }
 
-export default function Settings({ onBack, onLicenseUpdate }: SettingsProps) {
+export default function Settings({ onLicenseUpdate }: SettingsProps) {
   const [licenseKey, setLicenseKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState({
@@ -66,13 +64,6 @@ export default function Settings({ onBack, onLicenseUpdate }: SettingsProps) {
             <KeyRound className="h-5 w-5 text-blue-500" />
             <h2 className="text-xl font-semibold text-gray-800">License Management</h2>
           </div>
-          <button
-            onClick={onBack}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
         </div>
 
         {/* License Key Input Section */}

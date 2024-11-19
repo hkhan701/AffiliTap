@@ -1,0 +1,101 @@
+import { Image, Copy, Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import { handlePurchaseRedirect } from "@/utils/utils";
+
+const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToClipboard }) => {
+  const isPro = currentPlan === 'Pro Plan';
+
+  return (
+    <div className="w-full bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+        <h2 className="text-xl font-semibold text-white flex items-center">
+          <Image className="w-5 h-5 mr-2" />
+          Product Image
+        </h2>
+      </div>
+
+      <div className="p-6">
+        {productData?.image_url ? (
+          <div className="space-y-4">
+            {/* Image Container */}
+            <div className="relative rounded-xl overflow-hidden bg-gray-50">
+              <img
+                src={productData.image_url}
+                alt="Product"
+                className={`w-full h-64 object-contain transition-all duration-300 ${
+                  !isPro ? 'grayscale blur-[2px]' : ''
+                }`}
+              />
+
+              {/* Pro Feature Overlay */}
+              {!isPro && (
+                <div 
+                  className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-6 space-y-4"
+                >
+                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white font-medium text-lg mb-1">
+                      Pro Feature
+                    </p>
+                    <p className="text-white/80 text-sm mb-4">
+                      Upgrade to Pro to copy product images
+                    </p>
+                    <button
+                      onClick={handlePurchaseRedirect}
+                      className="px-6 py-2 bg-white text-blue-600 rounded-lg font-medium
+                               transform hover:scale-105 transition-all duration-200
+                               focus:outline-none focus:ring-2 focus:ring-white/50"
+                    >
+                      Upgrade Now
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Copy Button */}
+            <button
+              onClick={() => copyImageToClipboard(productData?.image_url)}
+              disabled={!isPro}
+              className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-medium
+                         transition-all duration-200 ${
+                imageCopied
+                  ? 'bg-green-50 text-green-600 border border-green-200'
+                  : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+              } disabled:opacity-60 disabled:cursor-not-allowed`}
+            >
+              {imageCopied ? (
+                <>
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Copied to Clipboard!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-5 h-5 mr-2" />
+                  Copy Image
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          // Empty State
+          <div className="flex flex-col items-center justify-center h-64 bg-gray-50 rounded-xl p-6">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <AlertCircle className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-600 font-medium text-center mb-1">
+              No Product Image Available
+            </p>
+            <p className="text-gray-400 text-sm text-center">
+              Please make sure you're on a valid product page
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProductImageCard;
