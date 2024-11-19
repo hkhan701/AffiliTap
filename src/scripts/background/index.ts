@@ -89,7 +89,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // Workaround for sidePanel not working
 const sidePanel = (browser as any).sidePanel;
 sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-  .catch((error) => console.error(error));
+  .catch((error) => console.log(error));
 
 // Please remove default_popup from manifest.json
 // And you can enable this code to open to communicate with content

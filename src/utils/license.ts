@@ -9,9 +9,14 @@ const BASIC_PLAN = "Basic Plan";
 const PRO_PLAN = "Pro Plan";
 
 const STORE_ID = 130802;
+
 const PRODUCT_ID = 396601;
 const VARIANT_PRO_PLAN_ID = 603012;
 const VARIANT_BASIC_PLAN_ID = 603013;
+
+const PRODUCT_ID_TEST = 377644;
+const VARIANT_PRO_PLAN_ID_TEST = 568085;
+const VARIANT_BASIC_PLAN_ID_TEST = 570940;
 
 /**
  * General function to handle API requests to Lemon Squeezy.
@@ -35,7 +40,7 @@ const callLemonSqueezyAPI = async (endpoint: 'validate' | 'activate' | 'deactiva
 
         return await response.json();
     } catch (error) {
-        console.error(`Error during license ${endpoint}:`, error);
+        console.log(`Error during license ${endpoint}:`, error);
         return null;
     }
 };
@@ -93,7 +98,8 @@ export const hasValidLicense = async (): Promise<boolean> => {
  */
 export const hasBasicSubscription = async (): Promise<boolean> => {
     const meta = await getMetaData();
-    return (await hasValidLicense()) && meta?.variant_id === VARIANT_BASIC_PLAN_ID;
+    return (await hasValidLicense()) && 
+    (meta?.variant_id === VARIANT_BASIC_PLAN_ID || meta?.variant_id === VARIANT_BASIC_PLAN_ID_TEST);
 };
 
 /**
@@ -101,7 +107,8 @@ export const hasBasicSubscription = async (): Promise<boolean> => {
  */
 export const hasProfessionalSubscription = async (): Promise<boolean> => {
     const meta = await getMetaData();
-    return (await hasValidLicense()) && meta?.variant_id === VARIANT_PRO_PLAN_ID;
+    return (await hasValidLicense()) && 
+    (meta?.variant_id === VARIANT_PRO_PLAN_ID || meta?.variant_id === VARIANT_PRO_PLAN_ID_TEST);
 };
 
 export const getCurrentPlan = async (): Promise<string | null> => {
@@ -122,12 +129,15 @@ export const activateLicenseKey = async (licenseKey: string): Promise<boolean> =
 
     if (!data || !data.activated) return false;
     // check that the store id matches
-    console.log(data.meta.store_id, STORE_ID, data.meta.product_id, PRODUCT_ID);
-    if (data.meta.store_id !== STORE_ID || data.meta.product_id !== PRODUCT_ID) return false;
+    if (data.meta.store_id !== STORE_ID) return false;
 
-    // Save the full data object in storage
-    await saveLicenseData(data);
-    return true;
+    // check that the product id matches for both test and live
+    if (data.meta.product_id === PRODUCT_ID || data.meta.product_id === PRODUCT_ID_TEST){
+        // Save the full data object in storage
+        await saveLicenseData(data);
+        return true;
+    }
+    return false; 
 };
 
 /**
@@ -157,7 +167,7 @@ export const verifyLicenseKey = async (): Promise<boolean> => {
     if (!licenseKey || !instanceId) return false;
 
     const response = await callLemonSqueezyAPI('validate', licenseKey, { instance_id: instanceId});
-    if (response.valid && response.license_key.key === licenseKey && response.instance.id === instanceId && response.meta.store_id === STORE_ID && response.meta.product_id === PRODUCT_ID) {
+    if (response.valid && response.license_key.key === licenseKey && response.instance.id === instanceId && response.meta.store_id === STORE_ID && (response.meta.product_id === PRODUCT_ID || response.meta.product_id === PRODUCT_ID_TEST)) {
         // console.log('Valid license key. Saving to storage...');
         await saveLicenseData(response);
         return true;
