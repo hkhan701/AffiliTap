@@ -146,7 +146,7 @@ async function md5Hash(message: string): Promise<string> {
 }
 
 // Update with real purchase link
-export const handlePurchaseRedirect = () => { window.open("https://affilitap.lemonsqueezy.com/checkout", "_blank") }
+export const handlePurchaseRedirect = () => { window.open("https://affilitap.lemonsqueezy.com/buy/7ab05e49-af4e-45a3-8597-41ed999ca240", "_blank") }
 
 export const handleBillingRedirect = () => { window.open("https://affilitap.lemonsqueezy.com/billing", "_blank") }
 
