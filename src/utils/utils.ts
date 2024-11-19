@@ -56,6 +56,7 @@ export const modifyImageLink = (link: string) => {
  * @returns {Promise<string>} The short URL.
  */
 export const getShortUrl = async (trackingId: string): Promise<string> => {
+  try {
     const tabs = await browser.tabs.query({ active: true, lastFocusedWindow: true });
     const activeTab = tabs[0];
     const longUrl = activeTab.url;
@@ -83,6 +84,10 @@ export const getShortUrl = async (trackingId: string): Promise<string> => {
     const res = await fetch(linkToFetch);
     const links = await res.json();
     return links.shortUrl;
+  } catch (error) {
+    console.log("Unexpected error fetching short URL: ", error);
+    return '';
+  }
 };
 
 
@@ -110,7 +115,7 @@ export const getTrackingIds = async () => {
   
       return [...caTrackingIds, ...usTrackingIds];
     } catch (error) {
-      console.error("Unexpected error fetching tracking IDs: ", error);
+      console.log("Unexpected error fetching tracking IDs: ", error);
       return [];
     }
   };
