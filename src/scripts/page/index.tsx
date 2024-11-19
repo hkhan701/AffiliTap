@@ -1,18 +1,34 @@
-import { createRoot } from "react-dom/client"
-import { useState, useEffect } from 'react'
-import { FaPlus, FaTrash, FaSave, FaStar } from 'react-icons/fa'
-import { getLicenseStatus, getCurrentPlan } from "@/utils/license"
-import { browserStorage } from "@/utils/browserStorage"
-import Footer from "../../components/footer"
-import ContentLockOverlay from "../../components/contentLockOverlay"
-import LicenseStatusHeader from "../../components/licenseStatusHeader"
-import Placeholders from "./placeholders"
-import InfoPopup from '../../components/infoPopup'
-import ConfirmModal from '../../components/confirmModal'
+import { createRoot } from "react-dom/client";
+import { useState, useEffect } from 'react';
+
+import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
+import { browserStorage } from "@/utils/browserStorage";
+import { getTrackingIds } from "@/utils/utils";
+
+import ConfirmModal from '../../components/confirmModal';
+import ContentLockOverlay from "../../components/contentLockOverlay";
+import Footer from "../../components/footer";
+import InfoPopup from '../../components/infoPopup';
+import LicenseStatusHeader from "../../components/licenseStatusHeader";
+import Placeholders from "../../components/placeholders";
+
+import {
+  ChevronDown,
+  FileText,
+  Globe,
+  Lock,
+  PencilLine,
+  Plus,
+  Save,
+  Star,
+  Tag,
+  Trash2,
+  Type
+} from 'lucide-react';
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
-import { getTrackingIds } from "@/utils/utils"
+
 
 export default function Page() {
   const [trackingIds, setTrackingIds] = useState([])
@@ -185,160 +201,208 @@ export default function Page() {
           <ContentLockOverlay isContentLocked={isContentLocked} />
 
           {/* Edit Template Header */}
-          <div className="border-b bg-blue-100 px-6 py-4 rounded-lg">
-            <div className="flex items-center justify-start gap-3">
-              <h2 className="text-lg font-medium">Edit Template:</h2>
-              <div className="flex gap-2">
-                <div className="flex-1 max-w-md">
-                  <select
-                    value={activeTemplateId}
-                    onChange={(e) => setActiveTemplateId(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
-                    disabled={isContentLocked}
-                  >
-                    {templates.map(template => (
-                      <option key={template.id} value={template.id}>
-                        {template?.name} {template?.isDefault ? '(Default)' : ''}
-                      </option>
-                    ))}
-                  </select>
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200">
+            <div className="px-6 py-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {/* Header with Edit Icon */}
+                <div className="flex items-center text-blue-800">
+                  <PencilLine size={20} className="mr-2" />
+                  <h2 className="text-lg font-semibold">Edit Template</h2>
                 </div>
+
+                {/* Template Selector Dropdown */}
+                <div className="flex-1 min-w-0 max-w-xl relative">
+                  <div className="relative">
+                    <select
+                      value={activeTemplateId}
+                      onChange={(e) => setActiveTemplateId(e.target.value)}
+                      className="w-full pl-4 pr-10 py-2.5 appearance-none bg-white border border-blue-200 rounded-lg shadow-sm 
+                          focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                          disabled:bg-gray-50 disabled:text-gray-400 disabled:border-gray-200
+                          text-gray-900 transition-all"
+                      disabled={isContentLocked}
+                    >
+                      {templates.map(template => (
+                        <option key={template.id} value={template.id} className="py-1">
+                          {template?.name}
+                          {template?.isDefault ? ' (Default)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={18}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Set Default Button */}
+                <button
+                  onClick={handleSetDefaultTemplate}
+                  disabled={isContentLocked || activeTemplate?.isDefault}
+                  className={`group min-w-[160px] px-4 py-2.5 rounded-lg font-medium
+                      focus:outline-none focus:ring-2 focus:ring-offset-2 
+                      transition-all duration-200 flex items-center justify-center
+                      ${!activeTemplate?.isDefault && !isContentLocked
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white focus:ring-amber-500'
+                      : activeTemplate?.isDefault
+                        ? 'bg-amber-100 text-amber-700 cursor-default'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                  <Star
+                    size={18}
+                    className={`mr-2 ${activeTemplate?.isDefault
+                        ? 'fill-amber-500'
+                        : !isContentLocked
+                          ? 'group-hover:fill-white transition-colors duration-200'
+                          : ''
+                      }`}
+                  />
+                  {activeTemplate?.isDefault ? 'Default Template' : 'Set as Default'}
+                </button>
               </div>
-              <button
-                onClick={handleSetDefaultTemplate}
-                disabled={isContentLocked || activeTemplate?.isDefault}
-                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${!activeTemplate?.isDefault && !isContentLocked
-                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-              >
-                <FaStar className="mr-2" /> {activeTemplate?.isDefault ? 'Default Template' : 'Set as Default'}
-              </button>
             </div>
           </div>
 
-          <div className="space-y-6">
 
-            <div className="flex items-center justify-between pt-4">
-              <div className="flex-1 max-w-md">
+          {/* Add New Template Header */}
+          <div className="flex items-center space-x-4 pb-6 pt-4">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
                 <input
                   type="text"
                   value={newTemplateName}
                   onChange={(e) => setNewTemplateName(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !isContentLocked && handleAddTemplate()}
-                  placeholder="Enter Template Name"
-                  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                  placeholder="Create New Template"
+                  className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                   disabled={isContentLocked}
                 />
                 <button
                   onClick={handleAddTemplate}
-                  className="ml-2 bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                   disabled={isContentLocked}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
                 >
-                  <FaPlus />
+                  <Plus size={18} />
+                </button>
+              </div>
+            </div>
+            {isContentLocked && (
+              <div className="flex items-center text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md">
+                <Lock size={16} className="mr-2" />
+                <span className="text-sm font-medium">Template is locked</span>
+              </div>
+            )}
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {/* Left Column - Main Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Template Name */}
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <FileText size={16} className="mr-2" />
+                  Template Name
+                </label>
+                <input
+                  type="text"
+                  value={activeTemplate.name}
+                  onChange={(e) => updateActiveTemplate({ name: e.target.value })}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
+                  disabled={isContentLocked}
+                />
+              </div>
+
+              {/* Template Content */}
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <Type size={16} className="mr-2" />
+                  Template Content
+                </label>
+                <textarea
+                  value={activeTemplate.content}
+                  onChange={(e) => updateActiveTemplate({ content: e.target.value })}
+                  placeholder={defaultContent}
+                  className="w-full h-80 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm disabled:bg-gray-50 transition-all resize-none"
+                  disabled={isContentLocked}
+                />
+              </div>
+
+              {/* Settings Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Tracking ID */}
+                <div className="space-y-2">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Globe size={16} className="mr-2" />
+                    Tracking ID
+                  </label>
+                  <select
+                    value={activeTemplate.trackingId}
+                    onChange={(e) => updateActiveTemplate({ trackingId: e.target.value })}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 bg-white transition-all"
+                    disabled={isContentLocked}
+                  >
+                    {trackingIds.map(({ id, country }) => (
+                      <option key={`${id}-${country}`} value={id}>
+                        {id} ({country})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Country codes are shown next to each tracking ID</p>
+                </div>
+
+                {/* Word Limit */}
+                <div className="space-y-2">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Tag size={16} className="mr-2" />
+                    Title Word Limit
+                  </label>
+                  <input
+                    type="number"
+                    value={activeTemplate.titleWordLimit}
+                    onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
+                    disabled={isContentLocked}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-4 pt-4">
+                <button
+                  onClick={handleSaveTemplate}
+                  disabled={!hasChanges || isContentLocked}
+                  className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges && !isContentLocked
+                      ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                  <Save size={18} className="mr-2" />
+                  Save Changes
+                </button>
+
+                <button
+                  onClick={() => setIsConfirmModalOpen(true)}
+                  disabled={isContentLocked}
+                  className="flex items-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                >
+                  <Trash2 size={18} className="mr-2" />
+                  Delete Template
                 </button>
               </div>
             </div>
 
-            <div className="space-y-4">
-
-              {/* Content */}
-              <div className="grid grid-cols-12 gap-6">
-                {/* Left Column */}
-                <div className="col-span-8 space-y-4">
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Template Name
-                    </label>
-                    <input
-                      type="text"
-                      value={activeTemplate.name}
-                      onChange={(e) => updateActiveTemplate({ name: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                      disabled={isContentLocked}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Template Content
-                    </label>
-                    <textarea
-                      value={activeTemplate.content}
-                      onChange={(e) => updateActiveTemplate({ content: e.target.value })}
-                      placeholder={defaultContent}
-                      className="w-full h-64 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono disabled:bg-gray-100 disabled:text-gray-500"
-                      disabled={isContentLocked}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tracking ID
-                      </label>
-                      <select
-                        value={activeTemplate.trackingId}
-                        onChange={(e) => updateActiveTemplate({ trackingId: e.target.value })}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-500"
-                        disabled={isContentLocked}
-                      >
-
-                        {/* Map over trackingIds with country labels */}
-                        {trackingIds.map(({ id, country }) => (
-                          <option key={`${id}-${country}`} value={id}>
-                            {id} ({country})
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-sm text-gray-500 mt-1">The country associated is listed beside the tracking ID for reference.</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Title Word Limit
-                      </label>
-                      <input
-                        type="number"
-                        value={activeTemplate.titleWordLimit}
-                        onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        disabled={isContentLocked}
-                      />
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Right Column */}
-                <div className="col-span-4 justify-end">
-                  <Placeholders isContentLocked={isContentLocked} />
-                </div>
-
+            {/* Right Column - Placeholders */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-6">
+                <Placeholders isContentLocked={isContentLocked} />
               </div>
-
-            </div>
-
-            <div className="flex justify-start space-x-3">
-              <button
-                onClick={handleSaveTemplate}
-                disabled={!hasChanges || isContentLocked}
-                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center ${hasChanges && !isContentLocked
-                  ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-              >
-                <FaSave className="mr-2" /> Save
-              </button>
-              <button
-                onClick={() => setIsConfirmModalOpen(true)}
-                disabled={isContentLocked}
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <FaTrash className="mr-2" /> Delete
-              </button>
             </div>
           </div>
+
         </div>
       </main>
 
