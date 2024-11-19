@@ -8,7 +8,7 @@ import ContentLockOverlay from "../../components/contentLockOverlay"
 import LicenseStatusHeader from "../../components/licenseStatusHeader"
 import Placeholders from "./placeholders"
 import InfoPopup from '../../components/infoPopup'
-import ConfirmModal from './confirmModal'
+import ConfirmModal from '../../components/confirmModal'
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
