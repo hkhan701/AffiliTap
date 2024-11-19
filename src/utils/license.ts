@@ -9,9 +9,9 @@ const BASIC_PLAN = "Basic Plan";
 const PRO_PLAN = "Pro Plan";
 
 const STORE_ID = 130802;
-const PRODUCT_ID = 377644;
-const VARIANT_PRO_PLAN_ID = 568085;
-const VARIANT_BASIC_PLAN_ID = 570940;
+const PRODUCT_ID = 396601;
+const VARIANT_PRO_PLAN_ID = 603012;
+const VARIANT_BASIC_PLAN_ID = 603013;
 
 /**
  * General function to handle API requests to Lemon Squeezy.
