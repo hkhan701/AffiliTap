@@ -367,7 +367,8 @@ export default function Page() {
                     className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
                     disabled={isContentLocked}
                   />
-                </div>
+                  <p className="text-xs text-gray-500 mt-1">The maximum number of words in the product title</p>
+                </div>  
               </div>
 
               {/* Action Buttons */}
