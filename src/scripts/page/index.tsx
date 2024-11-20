@@ -84,6 +84,7 @@ export default function Page() {
   }
 
   const handleConfirmDeleteTemplate = () => {
+    setIsConfirmModalOpen(false)
     const updatedTemplates = templates.filter(template => template.id !== activeTemplateId)
     if (updatedTemplates.length === 0) {
       setPopupMessage("Cannot delete the last template")
@@ -105,7 +106,6 @@ export default function Page() {
       setPopupMessage("Error deleting templates")
       setPopupType('error')
     }
-    setIsConfirmModalOpen(false);
   }
 
   const handleSaveTemplate = () => {

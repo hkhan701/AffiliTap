@@ -232,34 +232,42 @@ export default function SidePanel() {
                             </button>
 
                             <div className="relative">
-                                {/* Floating Label Style Select */}
-                                <div className="relative flex items-center">
-                                    <div className="relative flex-1">
-                                        <select
-                                            value={selectedTemplate}
-                                            onChange={handleTemplateChange}
-                                            className="w-full appearance-none pl-10 pr-10 py-2.5 bg-white 
-                     text-gray-700 border border-gray-200 rounded-lg
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     transition-all duration-200 hover:border-gray-300"
-                                            aria-label="Select template"
-                                        >
-                                            {templates.length > 0 ? (
-                                                templates.map((template) => (
-                                                    <option key={template.id} value={template.id}>
-                                                        {template.name} {template.isDefault && '(Default)'}
-                                                    </option>
-                                                ))
-                                            ) : (
-                                                <option disabled>No templates available</option>
-                                            )}
-                                        </select>
+                                {/* Select Label and Control Container */}
+                                <div className="flex items-center gap-4">
+                                    <label htmlFor="template-select" className="text-gray-700 font-medium whitespace-nowrap text-lg">
+                                        Select template:
+                                    </label>
 
-                                        {/* Template Icon */}
-                                        <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    {/* Floating Label Style Select */}
+                                    <div className="relative flex items-center flex-1">
+                                        <div className="relative flex-1">
+                                            <select
+                                                id="template-select"
+                                                value={selectedTemplate}
+                                                onChange={handleTemplateChange}
+                                                className="w-full appearance-none pl-10 pr-10 py-2.5 bg-white 
+                            text-gray-700 border border-gray-200 rounded-lg
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                            transition-all duration-200 hover:border-gray-300"
+                                                aria-label="Select template"
+                                            >
+                                                {templates.length > 0 ? (
+                                                    templates.map((template) => (
+                                                        <option key={template.id} value={template.id}>
+                                                            {template.name} {template.isDefault && '(Default)'}
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    <option disabled>No templates available</option>
+                                                )}
+                                            </select>
 
-                                        {/* Dropdown Icon */}
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                            {/* Template Icon */}
+                                            <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                                            {/* Dropdown Icon */}
+                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -267,7 +275,7 @@ export default function SidePanel() {
                                 {templates.length === 0 && (
                                     <div className="absolute top-full left-0 right-0 mt-2">
                                         <div className="flex items-center justify-center p-2 bg-gray-50 
-                       rounded-lg border border-gray-200 text-gray-500 text-sm">
+                                rounded-lg border border-gray-200 text-gray-500 text-sm">
                                             <AlertCircle className="mr-1.5 h-4 w-4" />
                                             No templates available
                                         </div>
