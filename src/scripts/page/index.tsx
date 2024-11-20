@@ -180,14 +180,14 @@ export default function Page() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 relative">
-    <div 
-          className="absolute inset-0 opacity-[0.50]"
-          style={{
-            backgroundImage: `radial-gradient(#3B82F6 1px, transparent 1px)`,
-            backgroundSize: '20px 20px',
-            filter: 'blur(1px)',
-          }}
-        ></div>
+      <div
+        className="absolute inset-0 opacity-[0.50]"
+        style={{
+          backgroundImage: `radial-gradient(#3B82F6 1px, transparent 1px)`,
+          backgroundSize: '20px 20px',
+          filter: 'blur(1px)',
+        }}
+      ></div>
 
       {/* Header */}
       <header className="bg-blue-100 shadow-md z-10">
@@ -292,9 +292,9 @@ export default function Page() {
                 <button
                   onClick={handleAddTemplate}
                   disabled={isContentLocked}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 transition-colors group"
                 >
-                  <Plus size={18} />
+                  <Plus size={18} className="transition-transform duration-200 group-hover:rotate-90" />
                 </button>
               </div>
             </div>

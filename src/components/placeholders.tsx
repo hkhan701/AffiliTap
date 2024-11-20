@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FaCopy } from 'react-icons/fa'
+import { Copy } from 'lucide-react'
 
 export default function Placeholders({ isContentLocked = false } ) {
     const [copiedPlaceholder, setCopiedPlaceholder] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function Placeholders({ isContentLocked = false } ) {
                                         }
                                         disabled={isContentLocked}
                                     >
-                                        <FaCopy className="inline-block mr-1 h-3 w-3" />
+                                        <Copy className="inline-block mr-1 h-3 w-3" />
                                         {copiedPlaceholder === key ? 'Copied!' : 'Copy'}
                                     </button>
                                 </div>
