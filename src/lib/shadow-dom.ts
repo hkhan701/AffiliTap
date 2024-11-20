@@ -13,13 +13,15 @@ function defineShadowElement(tag: string, id: string) {
       constructor() {
         super();
 
-        const shadow = this.attachShadow({ mode: "open" });
+        if (!this.shadowRoot) {
+          const shadow = this.attachShadow({ mode: "open" });
 
-        const container = document.createElement("div");
-        container.id = id;
-        container.style.setProperty("font-size", "16px");
+          const container = document.createElement("div");
+          container.id = id;
+          container.style.setProperty("font-size", "16px");
 
-        shadow.appendChild(container);
+          shadow.appendChild(container);
+        }
       }
     }
 
@@ -28,18 +30,19 @@ function defineShadowElement(tag: string, id: string) {
 
   return {
     setup(options?: DefineShadowElementSetupOptions) {
-      const container = document.createElement(tag);
+      let container = document.querySelector(tag) as HTMLElement;
 
-      options?.onBefore?.(container);
+      if (!container) {
+        container = document.createElement(tag);
+        options?.onBefore?.(container);
+        document.documentElement.appendChild(container);
+      }
 
-      document.documentElement.appendChild(container);
+      const shadowElement = container.shadowRoot?.querySelector(`#${id}`) as HTMLElement;
 
-      options?.onReady?.(
-        container,
-        container.shadowRoot.querySelector(`#${id}`) as HTMLElement
-      );
+      options?.onReady?.(container, shadowElement);
     },
   };
 }
 
-export { defineShadowElement }
+export { defineShadowElement };
