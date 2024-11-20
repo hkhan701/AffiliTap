@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCopy, FaInfoCircle} from "react-icons/fa";
+import { FaCopy, FaInfoCircle } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { Settings as SettingsIcon, Plus, ArrowLeft } from 'lucide-react';
@@ -185,15 +185,17 @@ export default function SidePanel() {
     return (
         <div className="bg-blue-100 h-full">
             <div className="p-3 border-b border-gray-200 flex items-center justify-between">
-                <img src={logo} alt="logo" width={120} />
+                <a href="https://affilitap.vercel.app" target="_blank" rel="noopener noreferrer">
+                    <img src={logo} alt="logo" width={120} className="transform transition-transform duration-300 hover:scale-105" />
+                </a>
                 {isSettingsOpen ? (
                     <button
-                    onClick={handleBack}
-                    className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                    aria-label="Go back"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </button>
+                        onClick={handleBack}
+                        className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        aria-label="Go back"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </button>
                 ) : (
                     <button
                         onClick={handleOpenSettings}

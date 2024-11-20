@@ -186,7 +186,9 @@ export default function Page() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <div className="p-4 border-b border-gray-200">
-              <img src={logo} alt="logo" width={200} />
+              <a href="https://affilitap.vercel.app" target="_blank" rel="noopener noreferrer">
+                <img src={logo} alt="logo" width={200} className="transform transition-transform duration-300 hover:scale-105" />
+              </a>
             </div>
           </div>
           <div className="flex items-center">
@@ -253,10 +255,10 @@ export default function Page() {
                   <Star
                     size={18}
                     className={`mr-2 ${activeTemplate?.isDefault
-                        ? 'fill-amber-500'
-                        : !isContentLocked
-                          ? 'group-hover:fill-white transition-colors duration-200'
-                          : ''
+                      ? 'fill-amber-500'
+                      : !isContentLocked
+                        ? 'group-hover:fill-white transition-colors duration-200'
+                        : ''
                       }`}
                   />
                   {activeTemplate?.isDefault ? 'Default Template' : 'Set as Default'}
@@ -368,7 +370,7 @@ export default function Page() {
                     disabled={isContentLocked}
                   />
                   <p className="text-xs text-gray-500 mt-1">The maximum number of words in the product title</p>
-                </div>  
+                </div>
               </div>
 
               {/* Action Buttons */}
@@ -377,8 +379,8 @@ export default function Page() {
                   onClick={handleSaveTemplate}
                   disabled={!hasChanges || isContentLocked}
                   className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges && !isContentLocked
-                      ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     }`}
                 >
                   <Save size={18} className="mr-2" />
