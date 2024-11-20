@@ -35,12 +35,17 @@ export default function HelpCard() {
 
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
-              If your templates aren't filling in as expected, please help us investigate by:
+              Common issues and solutions:
             </p>
             <ul className="list-disc text-sm text-gray-600 pl-5 space-y-2">
-              <li>Sending 1-2 product links experiencing issues</li>
-              <li>Describing which data is missing</li>
-              <li>Including your template name</li>
+              <li>If a recently added template isn't showing in the side panel, try closing and reopening the panel</li>
+              <li>If no data is loading, try refreshing the Amazon page first</li>
+              <li>If templates aren't filling in correctly, please send us:</li>
+              <ul className="list-disc pl-5 space-y-1 mt-1">
+                <li>1-2 product links experiencing issues</li>
+                <li>Description of missing data</li>
+                <li>Your template content</li>
+              </ul>
             </ul>
           </div>
 
