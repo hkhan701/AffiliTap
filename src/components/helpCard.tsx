@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { HelpCircle, Mail, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 
-export default function InfoCard() {
+export default function HelpCard() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -14,7 +14,7 @@ export default function InfoCard() {
         <div className="flex items-center space-x-2">
           <HelpCircle className="w-5 h-5 text-blue-500" />
           <h2 className="text-lg font-semibold text-gray-800">
-            Having Trouble with Data?
+            Having Trouble?
           </h2>
         </div>
         {isExpanded ? (

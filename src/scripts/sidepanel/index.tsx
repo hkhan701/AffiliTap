@@ -10,7 +10,7 @@ import logo from 'src/assets/images/logo.svg';
 
 import InfoPopup from '../../components/infoPopup';
 import LicenseStatusHeader from "../../components/licenseStatusHeader";
-import InfoCard from "../../components/infocard";
+import HelpCard from "../../components/helpCard";
 import Settings from "./settings";
 import ProductImageCard from "@/components/productImageCard";
 
@@ -391,7 +391,7 @@ export default function SidePanel() {
                 </div>
 
                 {/* Having trouble with data card */}
-                <InfoCard />
+                <HelpCard />
 
             </div>
 
