@@ -179,10 +179,18 @@ export default function Page() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100 relative">
+    <div 
+          className="absolute inset-0 opacity-[0.50]"
+          style={{
+            backgroundImage: `radial-gradient(#3B82F6 1px, transparent 1px)`,
+            backgroundSize: '20px 20px',
+            filter: 'blur(1px)',
+          }}
+        ></div>
 
       {/* Header */}
-      <header className="bg-blue-100 shadow-md">
+      <header className="bg-blue-100 shadow-md z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <div className="p-4 border-b border-gray-200">
