@@ -1,21 +1,20 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
-import { FaCopy, FaInfoCircle } from "react-icons/fa";
 import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { Settings as SettingsIcon, Plus, ArrowLeft } from 'lucide-react';
-import { handlePurchaseRedirect, handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
+import { handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
-import InfoPopup from '../../components/infoPopup';
-import LicenseStatusHeader from "../../components/licenseStatusHeader";
-import ContentLockOverlay from "../../components/contentLockOverlay";
-import InfoCard from "../../components/infocard";
+import { Settings as SettingsIcon, Plus, ArrowLeft, Hash, AlertTriangle, CheckCircle, Copy, Eye, Lock, AlertCircle, ChevronDown, Layers3 } from 'lucide-react';
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
-import "../../globals.css";
+import InfoPopup from '../../components/infoPopup';
+import LicenseStatusHeader from "../../components/licenseStatusHeader";
+import InfoCard from "../../components/infocard";
 import Settings from "./settings";
 import ProductImageCard from "@/components/productImageCard";
+
+import "../../globals.css";
 
 interface Template {
     id: string;
@@ -182,6 +181,10 @@ export default function SidePanel() {
         }
     };
 
+    const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
+    const hasProPlaceholders = checkForProPlaceholders(selectedTemplateData?.content);
+    const showProAlert = currentPlan !== "Pro Plan" && hasProPlaceholders;
+
     return (
         <div className="bg-blue-100 h-full">
             <div className="p-3 border-b border-gray-200 flex items-center justify-between">
@@ -219,63 +222,153 @@ export default function SidePanel() {
                     ) : (
                         <>
                             <LicenseStatusHeader />
+
                             <button
                                 onClick={handleAddTemplate}
-                                className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center"
+                                className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center group"
                             >
-                                <Plus className="mr-2 h-4 w-4" />
+                                <Plus className="mr-2 h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
                                 Create New Template
                             </button>
 
-                            <div className="w-full">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-4">Select your Template</h2>
-                                <select
-                                    value={selectedTemplate}
-                                    onChange={handleTemplateChange}
-                                    className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
-                                >
-                                    {templates.length > 0 ? (
-                                        templates.map((template) => (
-                                            <option key={template.id} value={template.id}>
-                                                {template.name} {template.isDefault ? '(Default)' : ''}
-                                            </option>
-                                        ))
-                                    ) : (
-                                        <option disabled>No templates available</option>
-                                    )}
-                                </select>
+                            <div className="relative">
+                                {/* Floating Label Style Select */}
+                                <div className="relative flex items-center">
+                                    <div className="relative flex-1">
+                                        <select
+                                            value={selectedTemplate}
+                                            onChange={handleTemplateChange}
+                                            className="w-full appearance-none pl-10 pr-10 py-2.5 bg-white 
+                     text-gray-700 border border-gray-200 rounded-lg
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                     transition-all duration-200 hover:border-gray-300"
+                                            aria-label="Select template"
+                                        >
+                                            {templates.length > 0 ? (
+                                                templates.map((template) => (
+                                                    <option key={template.id} value={template.id}>
+                                                        {template.name} {template.isDefault && '(Default)'}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option disabled>No templates available</option>
+                                            )}
+                                        </select>
+
+                                        {/* Template Icon */}
+                                        <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                                        {/* Dropdown Icon */}
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                {/* Empty State Message - Only shown when no templates */}
+                                {templates.length === 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-2">
+                                        <div className="flex items-center justify-center p-2 bg-gray-50 
+                       rounded-lg border border-gray-200 text-gray-500 text-sm">
+                                            <AlertCircle className="mr-1.5 h-4 w-4" />
+                                            No templates available
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Post Preview */}
-                            <div className="w-full bg-white rounded-lg shadow-md p-4 relative">
-                                <ContentLockOverlay isContentLocked={isContentLocked} />
-                                <h2 className="text-lg font-semibold mb-2">Post Preview</h2>
-                                {/* Reminder for Pro-only placeholders */}
-                                {currentPlan !== "Pro Plan" && checkForProPlaceholders(templates.find(t => t.id === selectedTemplate)?.content) && (
-                                    <div className="mb-4 p-3 rounded-md bg-yellow-100 border border-yellow-300 text-yellow-800 flex items-center">
-                                        <FaInfoCircle className="mr-2" />
-                                        <span>You have used placeholders that are only available in the Pro plan. <button onClick={handleBillingRedirect} className="text-blue-600 underline">Upgrade to unlock</button>.</span>
+                            <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
+
+                                {/* Header Section */}
+                                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-500 to-blue-600">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2">
+                                            <Eye className="h-5 w-5 text-white" />
+                                            <h2 className="text-lg font-semibold text-white">Post Preview</h2>
+                                        </div>
                                     </div>
-                                )}
-                                {templates.find(t => t.id === selectedTemplate)?.trackingId && (
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        <strong>Current Tracking ID:</strong> {templates.find(t => t.id === selectedTemplate)?.trackingId}
-                                    </p>
-                                )}
-                                <div className="bg-gray-100 rounded-lg p-4 mb-2">
-                                    <pre className="text-sm whitespace-pre-wrap">{previewText}</pre>
                                 </div>
-                                <div className="flex justify-center">
-                                    <button
-                                        onClick={() => copyToClipboard(previewText)}
-                                        className={
-                                            `px-2 py-1 text-md font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${copied ? 'animate-pulse text-green-500' : ''}`
-                                        }
-                                        disabled={isContentLocked}
-                                    >
-                                        <FaCopy className="inline-block mr-1 h-3 w-3" />
-                                        {copied ? 'Copied!' : 'Copy'}
-                                    </button>
+
+                                <div className="p-4 space-y-4">
+                                    {/* Pro Plan Alert */}
+                                    {showProAlert && (
+                                        <div className="flex items-start p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                                            <div className="ml-3">
+                                                <p className="text-sm text-amber-800">
+                                                    This template contains Pro-only placeholders.{' '}
+                                                    <button
+                                                        onClick={handleBillingRedirect}
+                                                        className="font-medium text-blue-600 hover:text-blue-700 focus:outline-none focus:underline transition-colors"
+                                                    >
+                                                        Upgrade to unlock
+                                                    </button>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Tracking ID Badge */}
+                                    {selectedTemplateData?.trackingId && (
+                                        <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
+                                            <Hash className="h-4 w-4 text-gray-500" />
+                                            <span className="font-medium">Tracking ID:</span>
+                                            <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
+                                                {selectedTemplateData.trackingId}
+                                            </code>
+                                        </div>
+                                    )}
+
+                                    {/* Preview Content */}
+                                    <div className="relative">
+                                        <div className="bg-gray-50 rounded-lg border border-gray-200">
+                                            <div className="px-4 py-3 border-b border-gray-200 bg-gray-100/50">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium text-gray-600">Content</span>
+                                                    <button
+                                                        onClick={() => copyToClipboard(previewText)}
+                                                        disabled={isContentLocked}
+                                                        className={`
+                    inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium
+                    transition-all duration-200
+                    ${copied
+                                                                ? 'bg-green-50 text-green-600 border border-green-200'
+                                                                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                                                            }
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
+                  `}
+                                                    >
+                                                        {copied ? (
+                                                            <>
+                                                                <CheckCircle className="h-4 w-4 mr-1.5" />
+                                                                Copied!
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Copy className="h-4 w-4 mr-1.5" />
+                                                                Copy
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="p-4">
+                                                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                                                    {previewText}
+                                                </pre>
+                                            </div>
+                                        </div>
+
+                                        {/* Content Lock Overlay */}
+                                        {isContentLocked && (
+                                            <div className="absolute inset-0 bg-gray-50/40 backdrop-blur-[1px] rounded-lg flex items-center justify-center">
+                                                <div className="flex items-center space-x-2 text-gray-500">
+                                                    <Lock className="h-5 w-5" />
+                                                    <span className="font-medium">Content is locked</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

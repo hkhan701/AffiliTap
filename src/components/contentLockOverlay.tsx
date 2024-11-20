@@ -1,4 +1,4 @@
-import { Lock, ShoppingCart, Sparkles } from "lucide-react";
+import { Lock, ShoppingCart } from "lucide-react";
 import { handlePurchaseRedirect } from "@/utils/utils";
 
 const ContentLockOverlay = ({ isContentLocked }: { isContentLocked: boolean }) => {
@@ -14,7 +14,7 @@ const ContentLockOverlay = ({ isContentLocked }: { isContentLocked: boolean }) =
           Feature Restricted
         </h3>
         <p className="text-gray-600 mb-6">
-          This feature requires an active license. Upgrade to unlock!
+          This requires an active license. Upgrade to unlock!
         </p>
         <button
           className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-all focus:outline-none focus:ring focus:ring-blue-300 relative overflow-hidden"

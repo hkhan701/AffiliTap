@@ -11,38 +11,40 @@ function defineShadowElement(tag: string, id: string) {
   if (!customElements.get(tag)) {
     class CustomContainer extends HTMLElement {
       constructor() {
-        super();
+        super()
 
         if (!this.shadowRoot) {
-          const shadow = this.attachShadow({ mode: "open" });
+          const shadow = this.attachShadow({ mode: "open" })
 
-          const container = document.createElement("div");
-          container.id = id;
-          container.style.setProperty("font-size", "16px");
+          const container = document.createElement("div")
+          container.id = id
+          container.style.setProperty("font-size", "16px")
 
-          shadow.appendChild(container);
+          shadow.appendChild(container)
         }
       }
     }
 
-    customElements.define(tag, CustomContainer);
+    customElements.define(tag, CustomContainer)
   }
 
   return {
     setup(options?: DefineShadowElementSetupOptions) {
-      let container = document.querySelector(tag) as HTMLElement;
+      let container = document.querySelector(tag) as HTMLElement
 
       if (!container) {
-        container = document.createElement(tag);
-        options?.onBefore?.(container);
-        document.documentElement.appendChild(container);
+        container = document.createElement(tag)
+        options?.onBefore?.(container)
+        document.documentElement.appendChild(container)
       }
 
-      const shadowElement = container.shadowRoot?.querySelector(`#${id}`) as HTMLElement;
+      const shadowElement = container.shadowRoot?.querySelector(
+        `#${id}`,
+      ) as HTMLElement
 
-      options?.onReady?.(container, shadowElement);
+      options?.onReady?.(container, shadowElement)
     },
-  };
+  }
 }
 
-export { defineShadowElement };
+export { defineShadowElement }
