@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AffiliTap",
   "description": "AffiliTap instantly populates custom templates with Amazon product information, helping you create engaging posts in seconds.",
-  "version": "1.12",
+  "version": "1.13",
   "permissions": ["storage", "activeTab", "clipboardWrite", "alarms", "sidePanel"],
   "host_permissions": ["*://*.amazon.ca/*", "*://*.amazon.com/*"],
   "icons": {
