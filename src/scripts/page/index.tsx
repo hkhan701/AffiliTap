@@ -60,8 +60,8 @@ export default function Page() {
   const handleClosePopup = () => setIsPopupOpen(false)
 
   const handleAddTemplate = () => {
-    if (currentPlan === "Basic Plan" && templates.length >= 5) {
-      setPopupMessage("You can only add up to 5 templates on the Basic plan. Upgrade to the Pro plan to UNLIMITED templates.");
+    if (currentPlan !== "Pro Plan" && templates.length >= 5) {
+      setPopupMessage("You can only add up to 5 templates on the Free plan. Upgrade to the Pro plan to UNLIMITED templates.");
       setPopupType("error");
       setIsPopupOpen(true);
       return;
@@ -208,7 +208,6 @@ export default function Page() {
       <main className="flex-grow container mx-auto px-4 py-8">
 
         <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <ContentLockOverlay isContentLocked={isContentLocked} />
 
           {/* Edit Template Header */}
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200">
@@ -230,7 +229,6 @@ export default function Page() {
                           focus:ring-2 focus:ring-blue-500 focus:border-transparent
                           disabled:bg-gray-50 disabled:text-gray-400 disabled:border-gray-200
                           text-gray-900 transition-all"
-                      disabled={isContentLocked}
                     >
                       {templates.map(template => (
                         <option key={template.id} value={template.id} className="py-1">
@@ -284,26 +282,18 @@ export default function Page() {
                   type="text"
                   value={newTemplateName}
                   onChange={(e) => setNewTemplateName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !isContentLocked && handleAddTemplate()}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddTemplate()}
                   placeholder="Create New Template"
                   className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 transition-all"
-                  disabled={isContentLocked}
                 />
                 <button
                   onClick={handleAddTemplate}
-                  disabled={isContentLocked}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 transition-colors group"
                 >
                   <Plus size={18} className="transition-transform duration-200 group-hover:rotate-90" />
                 </button>
               </div>
             </div>
-            {isContentLocked && (
-              <div className="flex items-center text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md">
-                <Lock size={16} className="mr-2" />
-                <span className="text-sm font-medium">Template is locked</span>
-              </div>
-            )}
           </div>
 
           {/* Main Content Grid */}
@@ -322,7 +312,6 @@ export default function Page() {
                   value={activeTemplate.name}
                   onChange={(e) => updateActiveTemplate({ name: e.target.value })}
                   className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
-                  disabled={isContentLocked}
                 />
               </div>
 
@@ -337,7 +326,6 @@ export default function Page() {
                   onChange={(e) => updateActiveTemplate({ content: e.target.value })}
                   placeholder={defaultContent}
                   className="w-full h-80 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm disabled:bg-gray-50 transition-all resize-none"
-                  disabled={isContentLocked}
                 />
               </div>
 
@@ -353,7 +341,6 @@ export default function Page() {
                     value={activeTemplate.trackingId}
                     onChange={(e) => updateActiveTemplate({ trackingId: e.target.value })}
                     className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 bg-white transition-all"
-                    disabled={isContentLocked}
                   >
                     {trackingIds.map(({ id, country }) => (
                       <option key={`${id}-${country}`} value={id}>
@@ -375,7 +362,6 @@ export default function Page() {
                     value={activeTemplate.titleWordLimit}
                     onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
                     className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
-                    disabled={isContentLocked}
                   />
                   <p className="text-xs text-gray-500 mt-1">The maximum number of words in the product title</p>
                 </div>
@@ -385,7 +371,7 @@ export default function Page() {
               <div className="flex items-center space-x-4 pt-4">
                 <button
                   onClick={handleSaveTemplate}
-                  disabled={!hasChanges || isContentLocked}
+                  disabled={!hasChanges}
                   className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges && !isContentLocked
                     ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -397,7 +383,6 @@ export default function Page() {
 
                 <button
                   onClick={() => setIsConfirmModalOpen(true)}
-                  disabled={isContentLocked}
                   className="flex items-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <Trash2 size={18} className="mr-2" />
@@ -409,7 +394,7 @@ export default function Page() {
             {/* Right Column - Placeholders */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
-                <Placeholders isContentLocked={isContentLocked} />
+                <Placeholders isContentLocked={false} />
               </div>
             </div>
           </div>

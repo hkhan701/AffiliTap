@@ -334,7 +334,6 @@ export default function SidePanel() {
                                                     <span className="text-sm font-medium text-gray-600">Content</span>
                                                     <button
                                                         onClick={() => copyToClipboard(previewText)}
-                                                        disabled={isContentLocked}
                                                         className={`
                     inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium
                     transition-all duration-200
@@ -366,16 +365,6 @@ export default function SidePanel() {
                                                 </pre>
                                             </div>
                                         </div>
-
-                                        {/* Content Lock Overlay */}
-                                        {isContentLocked && (
-                                            <div className="absolute inset-0 bg-gray-50/40 backdrop-blur-[1px] rounded-lg flex items-center justify-center">
-                                                <div className="flex items-center space-x-2 text-gray-500">
-                                                    <Lock className="h-5 w-5" />
-                                                    <span className="font-medium">Content is locked</span>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -17,7 +17,7 @@ export default function LicenseStatusHeader() {
           getLicenseStatus(),
           getCurrentPlan()
         ]);
-        
+
         setStatus({
           licenseStatus: license,
           currentPlan: plan,
@@ -46,7 +46,7 @@ export default function LicenseStatusHeader() {
   }
 
   const isActive = status.licenseStatus === 'active';
-  
+
   return (
     <div className="w-full p-4 rounded-lg border transition-colors duration-200 hover:bg-gray-50 flex items-center justify-between group bg-gray-100">
       <div className="flex flex-col mr-4">
@@ -65,9 +65,8 @@ export default function LicenseStatusHeader() {
             <span className="text-sm font-medium">Active</span>
           </div>
         ) : (
-          <div className="flex items-center text-red-600 bg-red-50 px-3 py-1 rounded-full">
-            <XCircle className="h-4 w-4 mr-1.5" />
-            <span className="text-sm font-medium">Inactive</span>
+          <div className="flex items-center text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+            <span className="text-sm font-medium">Free plan</span>
           </div>
         )}
       </div>
