@@ -247,11 +247,11 @@ export default function Page() {
                 {/* Set Default Button */}
                 <button
                   onClick={handleSetDefaultTemplate}
-                  disabled={isContentLocked || activeTemplate?.isDefault}
+                  disabled={activeTemplate?.isDefault}
                   className={`group min-w-[160px] px-4 py-2.5 rounded-lg font-medium
                       focus:outline-none focus:ring-2 focus:ring-offset-2 
                       transition-all duration-200 flex items-center justify-center
-                      ${!activeTemplate?.isDefault && !isContentLocked
+                      ${!activeTemplate?.isDefault
                       ? 'bg-amber-500 hover:bg-amber-600 text-white focus:ring-amber-500'
                       : activeTemplate?.isDefault
                         ? 'bg-amber-100 text-amber-700 cursor-default'
@@ -262,9 +262,7 @@ export default function Page() {
                     size={18}
                     className={`mr-2 ${activeTemplate?.isDefault
                       ? 'fill-amber-500'
-                      : !isContentLocked
-                        ? 'group-hover:fill-white transition-colors duration-200'
-                        : ''
+                      : 'group-hover:fill-white transition-colors duration-200'
                       }`}
                   />
                   {activeTemplate?.isDefault ? 'Default Template' : 'Set as Default'}
@@ -372,7 +370,7 @@ export default function Page() {
                 <button
                   onClick={handleSaveTemplate}
                   disabled={!hasChanges}
-                  className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges && !isContentLocked
+                  className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges
                     ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     }`}
