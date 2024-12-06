@@ -69,7 +69,7 @@ function App() {
       data[key] = element ? element.textContent?.trim() || null : null;
     }
     const current_price = data.price_ca_whole && data.price_ca_fraction
-      ? parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) + parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100
+      ? (parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) + parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100).toFixed(2)
       : null;
 
     const list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
