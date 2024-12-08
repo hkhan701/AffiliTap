@@ -49,6 +49,44 @@ const data: Record<string, string | null> = {
 
 function App() {
 
+  const calculateFinalPrice = (
+    currentPrice: number | null,
+    couponAmount: number,
+    couponPercent: number,
+    promoCodePercentOff: number | null
+  ) => {
+    if (!currentPrice) return null;
+
+    // Print out all the parameters
+    console.log("currentPrice", currentPrice);
+    console.log("couponAmount", couponAmount);
+    console.log("couponPercent", couponPercent);
+    console.log("promoCodePercentOff", promoCodePercentOff);
+  
+    let discountedPrice = currentPrice;
+  
+    // Apply either coupon amount or coupon percent (never both)
+    if (couponAmount > 0) {
+      discountedPrice -= couponAmount; // Fixed amount off
+    } else if (couponPercent > 0) {
+      discountedPrice -= (couponPercent / 100) * discountedPrice; // Percentage off
+    }
+
+    console.log("price after coupons ", discountedPrice);
+  
+    // Apply promo code discount based on original current price
+    const promoCodeDiscount = promoCodePercentOff
+      ? (promoCodePercentOff / 100) * currentPrice
+      : 0;
+    console.log("Promo code discount", promoCodeDiscount);
+  
+    // Subtract promo code discount
+    discountedPrice -= promoCodeDiscount;
+  
+    // Ensure the price is not negative
+    return Math.max(discountedPrice, 0).toFixed(2);
+  };
+
   const extractPromoCode = (text: string) => {
     if (!text) {
       return null;
@@ -95,6 +133,13 @@ function App() {
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
     const updated_image_url = image_url ? modifyImageLink(image_url) : null;
 
+    const final_price = calculateFinalPrice(
+      current_price ? parseFloat(current_price) : null,
+      coupon_amount,
+      coupon_percent,
+      promo_code_percent_off ? parseFloat(promo_code_percent_off) : null
+    );
+
     // Return structured data
     const productData = {
       product_name: data.product_name,
@@ -105,6 +150,7 @@ function App() {
       coupon_percent: coupon_percent,
       promo_code: promo_code,
       promo_code_percent_off: promo_code_percent_off,
+      final_price: final_price,
       rating: rating,
       image_url: updated_image_url
     };

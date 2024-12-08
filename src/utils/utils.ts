@@ -109,35 +109,46 @@ export const getShortUrl = async (trackingId: string): Promise<string> => {
  * @returns an array of tracking IDs.
  */
 export const getTrackingIds = async () => {
-  const caUrl = `https://www.amazon.ca/associates/sitestripe/getStoreTagMap?marketplaceId=7`
-  const usUrl = `https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1`
+  const caUrl = `https://www.amazon.ca/associates/sitestripe/getStoreTagMap?marketplaceId=7`;
+  const usUrl = `https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1`;
 
   try {
     const [caResult, usResult] = await Promise.allSettled([
-      fetch(caUrl).then((response) => response.json()),
-      fetch(usUrl).then((response) => response.json()),
-    ])
+      fetch(caUrl).then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error fetching CA data: ${response.status}`);
+        }
+        return response.json();
+      }),
+      fetch(usUrl).then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error fetching US data: ${response.status}`);
+        }
+        return response.json();
+      }),
+    ]);
 
     const caTrackingIds =
-      caResult.status === "fulfilled"
+      caResult.status === "fulfilled" && caResult.value.storeTagMap
         ? Object.values(caResult.value.storeTagMap)
             .flat()
             .map((id) => ({ id, country: "CA" }))
-        : []
+        : [];
 
     const usTrackingIds =
-      usResult.status === "fulfilled"
+      usResult.status === "fulfilled" && usResult.value.storeTagMap
         ? Object.values(usResult.value.storeTagMap)
             .flat()
             .map((id) => ({ id, country: "US" }))
-        : []
+        : [];
 
-    return [...caTrackingIds, ...usTrackingIds]
+    return [...caTrackingIds, ...usTrackingIds];
   } catch (error) {
-    console.log("Unexpected error fetching tracking IDs: ", error)
-    return []
+    console.log("Unexpected error fetching tracking IDs: ", error);
+    return [];
   }
-}
+};
+
 
 /**
  * Function to shorten a product name
