@@ -147,6 +147,7 @@ export default function SidePanel() {
             preview = preview
                 .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
                 .replace(/{coupon_%}/g, productData.coupon_percent || "")
+                .replace(/{dynamic_coupon}/g, productData.dynamic_coupon || "")
                 .replace(/{promo_code}/g, productData.promo_code || "")
                 .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
                 .replace(/{final_price}/g, productData.final_price || "");

@@ -10,9 +10,10 @@ export default function Placeholders({ isContentLocked = false } ) {
         { key: '{discount_percentage}', description: 'Discount percentage' },
         { key: '{coupon_$}', description: 'Coupon dollar amount off' },
         { key: '{coupon_%}', description: 'Coupon percentage off' },
+        { key: '{dynamic_coupon}', description: 'Dynamic coupon populates either {coupon_$} or {coupon_%} based on what exists' },
         { key: '{promo_code}', description: 'Promo code (eg. "HJY10OPF")' },
         { key: '{promo_code_%}', description: 'Percentage off of the promo code' },
-        { key: '{final_price]}', description: 'Price calculated after coupons and promo codes' },
+        { key: '{final_price}', description: 'Price calculated after coupons and promo codes' },
         { key: '{rating}', description: 'Rating of the product out of 5 stars' },
         { key: '{amz_link}', description: 'Amazon link of the product' },
     ]

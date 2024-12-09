@@ -62,9 +62,9 @@ function App() {
     console.log("couponAmount", couponAmount);
     console.log("couponPercent", couponPercent);
     console.log("promoCodePercentOff", promoCodePercentOff);
-  
+
     let discountedPrice = currentPrice;
-  
+
     // Apply either coupon amount or coupon percent (never both)
     if (couponAmount > 0) {
       discountedPrice -= couponAmount; // Fixed amount off
@@ -73,16 +73,16 @@ function App() {
     }
 
     console.log("price after coupons ", discountedPrice);
-  
+
     // Apply promo code discount based on original current price
     const promoCodeDiscount = promoCodePercentOff
       ? (promoCodePercentOff / 100) * currentPrice
       : 0;
     console.log("Promo code discount", promoCodeDiscount);
-  
+
     // Subtract promo code discount
     discountedPrice -= promoCodeDiscount;
-  
+
     // Ensure the price is not negative
     return Math.max(discountedPrice, 0).toFixed(2);
   };
@@ -140,6 +140,13 @@ function App() {
       promo_code_percent_off ? parseFloat(promo_code_percent_off) : null
     );
 
+    // Dynamic coupon: Show either the dollar or percentage discount
+    const dynamic_coupon = coupon_amount > 0
+      ? `$${coupon_amount}`
+      : coupon_percent > 0
+        ? `${coupon_percent}%`
+        : null;
+
     // Return structured data
     const productData = {
       product_name: data.product_name,
@@ -148,6 +155,7 @@ function App() {
       percent_off_list_price: percent_off_list_price,
       coupon_amount: coupon_amount,
       coupon_percent: coupon_percent,
+      dynamic_coupon: dynamic_coupon,
       promo_code: promo_code,
       promo_code_percent_off: promo_code_percent_off,
       final_price: final_price,
@@ -183,7 +191,7 @@ function App() {
         } catch (error) {
           console.log("Unable to send product data, side panel not open");
         }
-        }
+      }
     });
 
   }, []);
