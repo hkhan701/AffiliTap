@@ -36,8 +36,8 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
 
 browser.alarms.create("CHECK-LICENSE", {
   when: Date.now() + 10,
-  periodInMinutes: 10,
-}) // validate license every 10 mins
+  periodInMinutes: 30,
+}) // validate license every 30 mins
 
 // Listen for product data updates from the content script
 browser.runtime.onMessage.addListener(async (message) => {
