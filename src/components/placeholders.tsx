@@ -8,7 +8,8 @@ import list_price from 'src/assets/images/list_price.png'; // @ts-ignore
 import coupon_amount from 'src/assets/images/coupon_amount.png'; // @ts-ignore
 import coupon_percentage from 'src/assets/images/coupon_percentage.png';  // @ts-ignore
 import promo_code from 'src/assets/images/promo_code.png'; // @ts-ignore
-import promo_code_percentage from 'src/assets/images/promo_code_percentage.png';
+import promo_code_percentage from 'src/assets/images/promo_code_percentage.png'; // @ts-ignore
+import checkout_discount from 'src/assets/images/checkout_discount.png';
 
 
 export default function Placeholders({ isContentLocked = false }) {
@@ -28,6 +29,7 @@ export default function Placeholders({ isContentLocked = false }) {
             { key: '{dynamic_coupon}', description: 'Dynamic coupon populates either {coupon_$} or {coupon_%} based on what exists' },
             { key: '{promo_code}', description: 'Promo code (e.g., "HJY10OPF")', image: promo_code },
             { key: '{promo_code_%}', description: 'Percentage off of the promo code', image: promo_code_percentage },
+            { key: '{checkout_discount}', description: 'Discount applied automatically at checkout', image: checkout_discount },
             { key: '{final_price}', description: 'Price calculated after coupons and promo codes' },
             { key: '{rating}', description: 'Rating of the product out of 5 stars' },
             { key: '{amz_link}', description: 'Your SiteStripe Amazon affliate link of the product' }]

@@ -19,6 +19,7 @@ type Selectors = {
   clip_coupon: string;
   promo_code: string;
   promo_code_percent_off: string;
+  checkout_discount: string;
   rating: string;
   image_url: string;
 };
@@ -33,6 +34,7 @@ const selectors: Selectors = {
   clip_coupon: 'label[for*="checkboxpct"][id*="couponTextpctch"]',
   promo_code: 'span[id^="promoMessageCXCW"]',
   promo_code_percent_off: 'label[id^="greenBadgepctch"]',
+  checkout_discount: '.a-box.a-alert-inline.a-alert-inline-success.a-text-bold .a-alert-content',
   rating: 'span[data-hook="rating-out-of-text"]',
   image_url: "div.imgTagWrapper img",
 };
@@ -46,6 +48,7 @@ const data: Record<string, string | null> = {
   clip_coupon: null,
   promo_code: null,
   promo_code_percent_off: null,
+  checkout_discount: null,
   rating: null,
 };
 
@@ -65,7 +68,8 @@ function App() {
     currentPrice: number | null,
     couponAmount: number,
     couponPercent: number,
-    promoCodePercentOff: number | null
+    promoCodePercentOff: number | null,
+    checkoutDiscount: number | null
   ) => {
     if (!currentPrice) return null;
 
@@ -94,6 +98,11 @@ function App() {
 
     // Subtract promo code discount
     discountedPrice -= promoCodeDiscount;
+
+    // Add checkout discount percentage
+    if (checkoutDiscount) {
+      discountedPrice -= (checkoutDiscount / 100) * discountedPrice;
+    }
 
     // Ensure the price is not negative
     return Math.max(discountedPrice, 0).toFixed(2);
@@ -168,6 +177,7 @@ function App() {
     // );
 
     const promo_code_percent_off = data.promo_code_percent_off ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null;
+    const checkout_discount = data.checkout_discount ? data.checkout_discount.match(/(\d+)%/)[1] : null;
     const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
     const imageElement = document.querySelector(selectors.image_url);
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
@@ -177,7 +187,8 @@ function App() {
       current_price ? parseFloat(current_price) : null,
       coupon_amount,
       coupon_percent,
-      promo_code_percent_off ? parseFloat(promo_code_percent_off) : null
+      promo_code_percent_off ? parseFloat(promo_code_percent_off) : null,
+      checkout_discount ? parseFloat(checkout_discount) : null
     );
 
 
@@ -192,6 +203,7 @@ function App() {
       dynamic_coupon: getDynamicCoupon(coupon_amount, coupon_percent),
       promo_code: promo_code,
       promo_code_percent_off: promo_code_percent_off,
+      checkout_discount: checkout_discount,
       final_price: final_price,
       rating: rating,
       image_url: updated_image_url

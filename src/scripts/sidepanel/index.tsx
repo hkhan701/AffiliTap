@@ -150,6 +150,7 @@ export default function SidePanel() {
                 .replace(/{dynamic_coupon}/g, productData.dynamic_coupon || "")
                 .replace(/{promo_code}/g, productData.promo_code || "")
                 .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
+                .replace(/{checkout_discount}/g, productData.checkout_discount || "")
                 .replace(/{final_price}/g, productData.final_price || "");
         }
 
