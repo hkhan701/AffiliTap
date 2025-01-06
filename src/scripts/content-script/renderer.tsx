@@ -13,6 +13,7 @@ type Selectors = {
   product_name: string;
   price_ca_whole: string;
   price_ca_fraction: string;
+  current_price: string;
   list_price: string;
   percent_off_list_price: string;
   clip_coupon: string;
@@ -26,6 +27,7 @@ const selectors: Selectors = {
   product_name: "span#productTitle",
   price_ca_whole: "span.a-price-whole",
   price_ca_fraction: "span.a-price-fraction",
+  current_price: "#apex_offerDisplay_desktop .a-price .a-offscreen",
   list_price: 'span.a-price.a-text-price[data-a-size="s"][data-a-strike="true"][data-a-color="secondary"] > span.a-offscreen',
   percent_off_list_price: 'span.savingPriceOverride.reinventPriceSavingsPercentageMargin.savingsPercentage',
   clip_coupon: 'label[for*="checkboxpct"][id*="couponTextpctch"]',
@@ -49,6 +51,16 @@ const data: Record<string, string | null> = {
 
 function App() {
 
+  function getDynamicCoupon(coupon_amount: number, coupon_percent: number): string | null {
+    if (coupon_amount > 0) {
+        return `$${coupon_amount}`;
+    } else if (coupon_percent > 0) {
+        return `${coupon_percent}%`;
+    } else {
+        return null;
+    }
+}
+
   const calculateFinalPrice = (
     currentPrice: number | null,
     couponAmount: number,
@@ -58,10 +70,10 @@ function App() {
     if (!currentPrice) return null;
 
     // Print out all the parameters
-    console.log("currentPrice", currentPrice);
-    console.log("couponAmount", couponAmount);
-    console.log("couponPercent", couponPercent);
-    console.log("promoCodePercentOff", promoCodePercentOff);
+    // console.log("currentPrice", currentPrice);
+    // console.log("couponAmount", couponAmount);
+    // console.log("couponPercent", couponPercent);
+    // console.log("promoCodePercentOff", promoCodePercentOff);
 
     let discountedPrice = currentPrice;
 
@@ -72,13 +84,13 @@ function App() {
       discountedPrice -= (couponPercent / 100) * discountedPrice; // Percentage off
     }
 
-    console.log("price after coupons ", discountedPrice);
+    // console.log("price after coupons ", discountedPrice);
 
     // Apply promo code discount based on original current price
     const promoCodeDiscount = promoCodePercentOff
       ? (promoCodePercentOff / 100) * currentPrice
       : 0;
-    console.log("Promo code discount", promoCodeDiscount);
+    // console.log("Promo code discount", promoCodeDiscount);
 
     // Subtract promo code discount
     discountedPrice -= promoCodeDiscount;
@@ -99,6 +111,22 @@ function App() {
     }
   }
 
+  const calculatePercentOffListPrice = (listPrice: string, currentPrice: string) => {
+    if (!listPrice || !currentPrice) {
+      return null;
+    }
+
+    const listPriceValue = parseFloat(listPrice);
+    const currentPriceValue = parseFloat(currentPrice);
+
+    if (listPrice === currentPrice) {
+      return null;
+    }
+
+    const percentOff = ((listPriceValue - currentPriceValue) / listPriceValue) * 100;
+    return percentOff.toFixed(0);
+  };
+
   const getProductData = () => {
 
     // Populate data object using selectors
@@ -106,17 +134,29 @@ function App() {
       const element = document.querySelector(selector);
       data[key] = element ? element.textContent?.trim() || null : null;
     }
-    const current_price = data.price_ca_whole && data.price_ca_fraction
-      ? (parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) + parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100).toFixed(2)
-      : null;
+
+
+    let current_price = null;
+    const priceElement = document.querySelector(selectors.current_price);
+    if (priceElement) {
+      // Extract the price from the innerHTML, removing any currency symbol at the start
+      const priceString = priceElement.innerHTML.replace(/[^0-9.]/g, '');
+      current_price = parseFloat(parseFloat(priceString).toFixed(2));
+    } else {
+      current_price = data.price_ca_whole && data.price_ca_fraction
+        ? (parseFloat(data.price_ca_whole.replace(/[^0-9.]/g, '')) + parseFloat(data.price_ca_fraction.replace(/[^0-9]/g, '')) / 100).toFixed(2)
+        : null;
+    }
 
     const list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
-    const percent_off_list_price = data.percent_off_list_price ? data.percent_off_list_price.replace('-', '').replace('%', '') : null;
+
+    const percent_off_list_price = calculatePercentOffListPrice(list_price || '', current_price || '');
+    // const percent_off_list_price = data.percent_off_list_price ? data.percent_off_list_price.replace('-', '').replace('%', '') : null;
     const coupon_amount = data.clip_coupon ? parseFloat(data.clip_coupon.match(/\$([0-9.]+)/)?.[1] || '0') : 0;
     const coupon_percent = data.clip_coupon ? parseFloat(data.clip_coupon.match(/([0-9.]+)%/)?.[1] || '0') : 0;
     const promo_code = extractPromoCode(data.promo_code);
 
-    const promo_code_id = parseInt(document.querySelector(selectors.promo_code)?.id.match(/\d+/g)?.toString() || '', 10);;
+    const promo_code_id = parseInt(document.querySelector(selectors.promo_code)?.id.match(/\d+/g)?.toString() || '', 10);
 
     const all_promo_code_percent_off = document.querySelectorAll(selectors.promo_code_percent_off);
     // Find the element directly by matching its id
@@ -140,12 +180,6 @@ function App() {
       promo_code_percent_off ? parseFloat(promo_code_percent_off) : null
     );
 
-    // Dynamic coupon: Show either the dollar or percentage discount
-    const dynamic_coupon = coupon_amount > 0
-      ? `$${coupon_amount}`
-      : coupon_percent > 0
-        ? `${coupon_percent}%`
-        : null;
 
     // Return structured data
     const productData = {
@@ -155,7 +189,7 @@ function App() {
       percent_off_list_price: percent_off_list_price,
       coupon_amount: coupon_amount,
       coupon_percent: coupon_percent,
-      dynamic_coupon: dynamic_coupon,
+      dynamic_coupon: getDynamicCoupon(coupon_amount, coupon_percent),
       promo_code: promo_code,
       promo_code_percent_off: promo_code_percent_off,
       final_price: final_price,
