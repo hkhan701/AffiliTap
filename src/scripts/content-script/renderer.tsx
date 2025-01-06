@@ -156,18 +156,18 @@ function App() {
     const coupon_percent = data.clip_coupon ? parseFloat(data.clip_coupon.match(/([0-9.]+)%/)?.[1] || '0') : 0;
     const promo_code = extractPromoCode(data.promo_code);
 
-    const promo_code_id = parseInt(document.querySelector(selectors.promo_code)?.id.match(/\d+/g)?.toString() || '', 10);
+    // const promo_code_id = parseInt(document.querySelector(selectors.promo_code)?.id.match(/\d+/g)?.toString() || '', 10);
 
-    const all_promo_code_percent_off = document.querySelectorAll(selectors.promo_code_percent_off);
-    // Find the element directly by matching its id
-    const matchingElement = Array.from(all_promo_code_percent_off).find(
-      (element) => {
-        const id = parseInt(element.id.match(/\d+/g)?.toString() || '', 10);
-        return id === promo_code_id;
-      }
-    );
+    // const all_promo_code_percent_off = document.querySelectorAll(selectors.promo_code_percent_off);
+    // // Find the element directly by matching its id
+    // const matchingElement = Array.from(all_promo_code_percent_off).find(
+    //   (element) => {
+    //     const id = parseInt(element.id.match(/\d+/g)?.toString() || '', 10);
+    //     return id === promo_code_id;
+    //   }
+    // );
 
-    const promo_code_percent_off = matchingElement ? matchingElement.innerHTML.match(/(\d+)%/)[1] : null;
+    const promo_code_percent_off = data.promo_code_percent_off ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null;
     const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
     const imageElement = document.querySelector(selectors.image_url);
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
