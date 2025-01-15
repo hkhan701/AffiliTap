@@ -176,7 +176,9 @@ function App() {
     //   }
     // );
 
-    const promo_code_percent_off = data.promo_code_percent_off ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null;
+    const promo_code_percent_off = data.promo_code_percent_off 
+    ? (data.promo_code_percent_off.match(/(\d+)%/) ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null)
+    : null;
     const checkout_discount = data.checkout_discount ? data.checkout_discount.match(/(\d+)%/)[1] : null;
     const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
     const imageElement = document.querySelector(selectors.image_url);
