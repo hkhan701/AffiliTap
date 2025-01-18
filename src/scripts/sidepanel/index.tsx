@@ -125,6 +125,51 @@ export default function SidePanel() {
         }
     }, [productData, selectedTemplate, templates]);
 
+    function processTemplate(template: string, replacements: { [key: string]: string | undefined }): string {
+        // Function to handle {if:key}...{/if} blocks
+        function processConditionals(template: string): string {
+            const lines = template.split("\n");
+            const processedLines = lines.map((line) => {
+                // Find all conditionals in the line
+                const conditionalRegex = /{if:([^}]+)}(.*?){\/if}/g;
+                let match;
+                let newLine = line;
+                let hasContent = false;
+    
+                while ((match = conditionalRegex.exec(line)) !== null) {
+                    const [fullMatch, key, content] = match;
+                    if (replacements[key]) {
+                        // Replace the conditional with its content
+                        newLine = newLine.replace(fullMatch, content.trim());
+                        hasContent = true;
+                    } else {
+                        // Remove the entire conditional
+                        newLine = newLine.replace(fullMatch, "");
+                    }
+                }
+                // If the line had conditionals and is now empty, return null to remove it
+                return line.includes("{if:") && !hasContent ? null : newLine;
+            });
+    
+            // Filter out null lines and join the result
+            return processedLines.filter((line) => line !== null).join("\n");
+        }
+    
+        // First, process the conditionals
+        let processedTemplate = processConditionals(template);
+    
+        // Then, replace the remaining placeholders with the actual data
+        processedTemplate = processedTemplate.replace(
+            /{([^}]+)}/g,
+            (_, key) => replacements[key] || _
+        );
+    
+        // Remove any triple (or more) newlines that might have been created
+        processedTemplate = processedTemplate.replace(/\n{3,}/g, "\n\n");
+        
+        return processedTemplate.trim();
+    }
+
     const generatePreviewText = async (templateContent: string): Promise<string> => {
         if (!productData) {
             return "No product data available. Loading...";
@@ -134,27 +179,36 @@ export default function SidePanel() {
         const amz_link = await getShortUrl(currentTemplate?.trackingId);
         const limitedTitle = shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
 
-        let preview = templateContent
-            .replace(/{product_name}/g, limitedTitle || "")
-            .replace(/{current_price}/g, productData.current_price || "")
-            .replace(/{list_price}/g, productData.list_price || "")
-            .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
-            .replace(/{rating}/g, productData.rating || "")
-            .replace(/{amz_link}/g, amz_link || "");
-
-        // Only replace coupon and promo code placeholders if the user is on the Pro plan
+        // Define placeholder replacements
+        const replacements: { [key: string]: string | undefined } = {
+            product_name: limitedTitle,
+            current_price: productData.current_price,
+            list_price: productData.list_price,
+            discount_percentage: productData.percent_off_list_price,
+            rating: productData.rating,
+            amz_link: amz_link,
+        };
+        
         if (currentPlan === "Pro Plan") {
-            preview = preview
-                .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-                .replace(/{coupon_%}/g, productData.coupon_percent || "")
-                .replace(/{dynamic_coupon}/g, productData.dynamic_coupon || "")
-                .replace(/{promo_code}/g, productData.promo_code || "")
-                .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
-                .replace(/{checkout_discount}/g, productData.checkout_discount || "")
-                .replace(/{final_price}/g, productData.final_price || "");
+            Object.assign(replacements, {
+                "coupon_\x24": productData.coupon_amount,
+                "coupon_%": productData.coupon_percent,
+                dynamic_coupon: productData.dynamic_coupon,
+                promo_code: productData.promo_code,
+                "promo_code_%": productData.promo_code_percent_off,
+                checkout_discount: productData.checkout_discount,
+                final_price: productData.final_price,
+            });
         }
 
-        return preview;
+        let preview = processTemplate(templateContent, replacements);
+
+    // Replace coupon placeholder since it's a special case
+    if (currentPlan === "Pro Plan") {
+        preview = preview.replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+    }
+
+    return preview;
     };
 
     const copyImageToClipboard = async (imageUrl: string) => {

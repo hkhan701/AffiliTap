@@ -133,6 +133,10 @@ function App() {
     }
 
     const percentOff = ((listPriceValue - currentPriceValue) / listPriceValue) * 100;
+    // return null if percentOff is 0
+    if (percentOff === 0) {
+      return null;
+    }
     return percentOff.toFixed(0);
   };
 
