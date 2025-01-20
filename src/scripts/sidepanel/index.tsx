@@ -196,19 +196,43 @@ export default function SidePanel() {
                 dynamic_coupon: productData.dynamic_coupon,
                 promo_code: productData.promo_code,
                 "promo_code_%": productData.promo_code_percent_off,
-                checkout_discount: productData.checkout_discount,
+                "checkout_discount_\x24": productData.checkout_discount_amount,
+                "checkout_discount_%": productData.checkout_discount_percent,
+                "dynamic_checkout_discount": productData.dynamic_checkout_discount,
                 final_price: productData.final_price,
             });
         }
 
         let preview = processTemplate(templateContent, replacements);
 
-    // Replace coupon placeholder since it's a special case
-    if (currentPlan === "Pro Plan") {
-        preview = preview.replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-    }
+        // Replace coupon placeholder since it's a special case
+        if (currentPlan === "Pro Plan") {
+            preview = preview.replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+            .replace(/{checkout_discount\x24}/g, productData.checkout_discount_amount || "")
+        }
 
-    return preview;
+        preview = preview
+            .replace(/{product_name}/g, limitedTitle || "")
+            .replace(/{current_price}/g, productData.current_price || "")
+            .replace(/{list_price}/g, productData.list_price || "")
+            .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
+            .replace(/{rating}/g, productData.rating || "")
+            .replace(/{amz_link}/g, amz_link || "");
+
+        if (currentPlan === "Pro Plan") {
+            preview = preview
+                .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+                .replace(/{coupon_%}/g, productData.coupon_percent || "")
+                .replace(/{dynamic_coupon}/g, productData.dynamic_coupon || "")
+                .replace(/{promo_code}/g, productData.promo_code || "")
+                .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
+                .replace(/{checkout_discount_\x24}/g, productData.checkout_discount_amount || "")
+                .replace(/{checkout_discount_%}/g, productData.checkout_discount_percent || "")
+                .replace(/{dynamic_checkout_discount}/g, productData.dynamic_checkout_discount || "")
+                .replace(/{final_price}/g, productData.final_price || "");
+        }
+
+        return preview;
     };
 
     const copyImageToClipboard = async (imageUrl: string) => {

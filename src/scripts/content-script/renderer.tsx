@@ -62,14 +62,26 @@ function App() {
     } else {
         return null;
     }
-}
+  }
+
+  function getDynamicCheckoutDiscount(checkout_discount: number | null, checkout_discount_amount: number | null): string | null {
+    if (checkout_discount) {
+        return `${checkout_discount}% off`;
+    } else if (checkout_discount_amount) {
+        return `$${checkout_discount_amount} off`;
+    } else {
+        return null;
+    }
+  }
 
   const calculateFinalPrice = (
     currentPrice: number | null,
     couponAmount: number,
     couponPercent: number,
+    promoCode: string | null,
     promoCodePercentOff: number | null,
-    checkoutDiscount: number | null
+    checkoutDiscount: number | null,
+    checkoutDiscountAmount: number | null
   ) => {
     if (!currentPrice) return null;
 
@@ -96,12 +108,20 @@ function App() {
       : 0;
     // console.log("Promo code discount", promoCodeDiscount);
 
-    // Subtract promo code discount
-    discountedPrice -= promoCodeDiscount;
+    // Subtract promo code discount only if promo code exists
+    // This handles cases where it is "Save X% on any 5"
+    if(promoCode) {
+      discountedPrice -= promoCodeDiscount;
+    }
 
     // Add checkout discount percentage
     if (checkoutDiscount) {
       discountedPrice -= (checkoutDiscount / 100) * discountedPrice;
+    }
+
+    // Add checkout discount amount
+    if (checkoutDiscountAmount) {
+      discountedPrice -= checkoutDiscountAmount;
     }
 
     // Ensure the price is not negative
@@ -183,7 +203,8 @@ function App() {
     const promo_code_percent_off = data.promo_code_percent_off 
     ? (data.promo_code_percent_off.match(/(\d+)%/) ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null)
     : null;
-    const checkout_discount = data.checkout_discount ? data.checkout_discount.match(/(\d+)%/)[1] : null;
+    const checkout_discount_percent = data.checkout_discount ? data.checkout_discount.match(/(\d+)%/)?.[1] : null;
+    const checkout_discount_amount = data.checkout_discount ? data.checkout_discount.match(/\$([0-9.]+)/)?.[1] : null;
     const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
     const imageElement = document.querySelector(selectors.image_url);
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
@@ -193,8 +214,10 @@ function App() {
       current_price ? parseFloat(current_price) : null,
       coupon_amount,
       coupon_percent,
+      promo_code,
       promo_code_percent_off ? parseFloat(promo_code_percent_off) : null,
-      checkout_discount ? parseFloat(checkout_discount) : null
+      checkout_discount_percent ? parseFloat(checkout_discount_percent) : null,
+      checkout_discount_amount ? parseFloat(checkout_discount_amount) : null
     );
 
 
@@ -209,7 +232,9 @@ function App() {
       dynamic_coupon: getDynamicCoupon(coupon_amount, coupon_percent),
       promo_code: promo_code,
       promo_code_percent_off: promo_code_percent_off,
-      checkout_discount: checkout_discount,
+      checkout_discount_percent: checkout_discount_percent,
+      checkout_discount_amount: checkout_discount_amount,
+      dynamic_checkout_discount: getDynamicCheckoutDiscount(parseFloat(checkout_discount_percent || '') || null, parseFloat(checkout_discount_amount || '') || null), // Use parseFloat to convert strings to numberscheckout_discount_percent, checkout_discount_amount),
       final_price: final_price,
       rating: rating,
       image_url: updated_image_url

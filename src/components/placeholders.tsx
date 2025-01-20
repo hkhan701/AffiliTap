@@ -29,7 +29,9 @@ export default function Placeholders({ isContentLocked = false }) {
             { key: '{dynamic_coupon}', description: 'Dynamic coupon populates either {coupon_$} or {coupon_%} based on what exists' },
             { key: '{promo_code}', description: 'Promo code (e.g., "HJY10OPF")', image: promo_code },
             { key: '{promo_code_%}', description: 'Percentage off of the promo code', image: promo_code_percentage },
-            { key: '{checkout_discount}', description: 'Discount applied automatically at checkout', image: checkout_discount },
+            { key: '{checkout_discount_$}', description: 'Discount amount applied automatically at checkout', image: checkout_discount },
+            { key: '{checkout_discount_%}', description: 'Discount percentage off applied automatically at checkout', image: checkout_discount },
+            { key: '{dynamic_checkout_discount}', description: 'Dynamic checkout discount populates either {checkout_discount_$} or {checkout_discount_%} based on what exists', image: checkout_discount },
             { key: '{final_price}', description: 'Price calculated after coupons and promo codes' },
             { key: '{rating}', description: 'Rating of the product out of 5 stars' },
             { key: '{amz_link}', description: 'Your SiteStripe Amazon affliate link of the product' }]
