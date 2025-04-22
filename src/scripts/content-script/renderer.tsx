@@ -10,33 +10,30 @@ const containerClassName = "chrome-extension-boilerplate-container-class"
 const tag = "chrome-extension-boilerplate-container"
 
 type Selectors = {
-  product_name: string;
-  price_ca_whole: string;
-  price_ca_fraction: string;
-  current_price: string;
-  list_price: string;
-  percent_off_list_price: string;
-  clip_coupon: string;
-  promo_code: string;
-  promo_code_percent_off: string;
-  checkout_discount: string;
-  rating: string;
-  image_url: string;
+  [key: string]: string[];
 };
 
+
 const selectors: Selectors = {
-  product_name: "span#productTitle",
-  price_ca_whole: "span.a-price-whole",
-  price_ca_fraction: "span.a-price-fraction",
-  current_price: "#apex_offerDisplay_desktop .a-price .a-offscreen",
-  list_price: 'span.a-price.a-text-price[data-a-size="s"][data-a-strike="true"][data-a-color="secondary"] > span.a-offscreen',
-  percent_off_list_price: 'span.savingPriceOverride.reinventPriceSavingsPercentageMargin.savingsPercentage',
-  clip_coupon: 'label[for*="checkboxpct"][id*="couponTextpctch"]',
-  promo_code: 'span[id^="promoMessageCXCW"]',
-  promo_code_percent_off: 'label[id^="greenBadgepctch"]',
-  checkout_discount: '.a-box.a-alert-inline.a-alert-inline-success.a-text-bold .a-alert-content',
-  rating: 'span[data-hook="rating-out-of-text"]',
-  image_url: "div.imgTagWrapper img",
+  product_name: ["span#productTitle"],
+  price_ca_whole: ["span.a-price-whole"],
+  price_ca_fraction: ["span.a-price-fraction"],
+  current_price: ["#apex_offerDisplay_desktop .a-price .a-offscreen"],
+  list_price: [
+    'span.a-price.a-text-price[data-a-size="s"][data-a-strike="true"][data-a-color="secondary"] > span.a-offscreen'
+  ],
+  percent_off_list_price: [
+    "span.savingPriceOverride.reinventPriceSavingsPercentageMargin.savingsPercentage"
+  ],
+  clip_coupon: [
+    "span.couponLabelText",
+    "label[for*='checkboxpct'][id*='couponTextpctch']"
+  ],
+  promo_code: ["span[id^='promoMessageCXCW']"],
+  promo_code_percent_off: ["label[id^='greenBadgepctch']"],
+  checkout_discount: [".a-box.a-alert-inline.a-alert-inline-success.a-text-bold .a-alert-content"],
+  rating: ['span[data-hook="rating-out-of-text"]'],
+  image_url: ["div.imgTagWrapper img"],
 };
 
 const data: Record<string, string | null> = {
@@ -56,21 +53,21 @@ function App() {
 
   function getDynamicCoupon(coupon_amount: number, coupon_percent: number): string | null {
     if (coupon_amount > 0) {
-        return `$${coupon_amount}`;
+      return `$${coupon_amount}`;
     } else if (coupon_percent > 0) {
-        return `${coupon_percent}%`;
+      return `${coupon_percent}%`;
     } else {
-        return null;
+      return null;
     }
   }
 
   function getDynamicCheckoutDiscount(checkout_discount: number | null, checkout_discount_amount: number | null): string | null {
     if (checkout_discount) {
-        return `${checkout_discount}% off`;
+      return `${checkout_discount}% off`;
     } else if (checkout_discount_amount) {
-        return `$${checkout_discount_amount} off`;
+      return `$${checkout_discount_amount} off`;
     } else {
-        return null;
+      return null;
     }
   }
 
@@ -110,7 +107,7 @@ function App() {
 
     // Subtract promo code discount only if promo code exists
     // This handles cases where it is "Save X% on any 5"
-    if(promoCode) {
+    if (promoCode) {
       discountedPrice -= promoCodeDiscount;
     }
 
@@ -163,14 +160,21 @@ function App() {
   const getProductData = () => {
 
     // Populate data object using selectors
-    for (const [key, selector] of Object.entries(selectors) as [keyof Selectors, string][]) {
-      const element = document.querySelector(selector);
-      data[key] = element ? element.textContent?.trim() || null : null;
+    for (const [key, selectorList] of Object.entries(selectors)) {
+      let value: string | null = null;
+      for (const sel of selectorList) {
+        const el = document.querySelector(sel);
+        if (el && el.textContent?.trim()) {
+          value = el.textContent.trim();
+          break;
+        }
+      }
+      data[key] = value;
     }
 
 
     let current_price = null;
-    const priceElement = document.querySelector(selectors.current_price);
+    const priceElement = document.querySelector(selectors.current_price[0]);
     if (priceElement) {
       // Extract the price from the innerHTML, removing any currency symbol at the start
       const priceString = priceElement.innerHTML.replace(/[^0-9.]/g, '');
@@ -182,9 +186,7 @@ function App() {
     }
 
     const list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
-
     const percent_off_list_price = calculatePercentOffListPrice(list_price || '', current_price || '');
-    // const percent_off_list_price = data.percent_off_list_price ? data.percent_off_list_price.replace('-', '').replace('%', '') : null;
     const coupon_amount = data.clip_coupon ? parseFloat(data.clip_coupon.match(/\$([0-9.]+)/)?.[1] || '0') : 0;
     const coupon_percent = data.clip_coupon ? parseFloat(data.clip_coupon.match(/([0-9.]+)%/)?.[1] || '0') : 0;
     const promo_code = extractPromoCode(data.promo_code);
@@ -200,13 +202,13 @@ function App() {
     //   }
     // );
 
-    const promo_code_percent_off = data.promo_code_percent_off 
-    ? (data.promo_code_percent_off.match(/(\d+)%/) ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null)
-    : null;
+    const promo_code_percent_off = data.promo_code_percent_off
+      ? (data.promo_code_percent_off.match(/(\d+)%/) ? data.promo_code_percent_off.match(/(\d+)%/)[1] : null)
+      : null;
     const checkout_discount_percent = data.checkout_discount ? data.checkout_discount.match(/(\d+)%/)?.[1] : null;
     const checkout_discount_amount = data.checkout_discount ? data.checkout_discount.match(/\$([0-9.]+)/)?.[1] : null;
     const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
-    const imageElement = document.querySelector(selectors.image_url);
+    const imageElement = document.querySelector(selectors.image_url[0]);
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
     const updated_image_url = image_url ? modifyImageLink(image_url) : null;
 
