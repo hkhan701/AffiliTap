@@ -15,6 +15,7 @@ import Settings from "./settings";
 import ProductImageCard from "@/components/productImageCard";
 
 import "../../globals.css";
+import DealsPromotionCard from "./deals-promotion-card";
 
 interface Template {
     id: string;
@@ -135,7 +136,7 @@ export default function SidePanel() {
                 let match;
                 let newLine = line;
                 let hasContent = false;
-    
+
                 while ((match = conditionalRegex.exec(line)) !== null) {
                     const [fullMatch, key, content] = match;
                     if (replacements[key]) {
@@ -150,23 +151,23 @@ export default function SidePanel() {
                 // If the line had conditionals and is now empty, return null to remove it
                 return line.includes("{if:") && !hasContent ? null : newLine;
             });
-    
+
             // Filter out null lines and join the result
             return processedLines.filter((line) => line !== null).join("\n");
         }
-    
+
         // First, process the conditionals
         let processedTemplate = processConditionals(template);
-    
+
         // Then, replace the remaining placeholders with the actual data
         processedTemplate = processedTemplate.replace(
             /{([^}]+)}/g,
             (_, key) => replacements[key] || _
         );
-    
+
         // Remove any triple (or more) newlines that might have been created
         processedTemplate = processedTemplate.replace(/\n{3,}/g, "\n\n");
-        
+
         return processedTemplate.trim();
     }
 
@@ -188,7 +189,7 @@ export default function SidePanel() {
             rating: productData.rating,
             amz_link: amz_link,
         };
-        
+
         if (currentPlan === "Pro Plan") {
             Object.assign(replacements, {
                 "coupon_\x24": productData.coupon_amount,
@@ -208,7 +209,7 @@ export default function SidePanel() {
         // Replace coupon placeholder since it's a special case
         if (currentPlan === "Pro Plan") {
             preview = preview.replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-            .replace(/{checkout_discount\x24}/g, productData.checkout_discount_amount || "")
+                .replace(/{checkout_discount\x24}/g, productData.checkout_discount_amount || "")
         }
 
         preview = preview
@@ -456,6 +457,7 @@ export default function SidePanel() {
                                 copyImageToClipboard={copyImageToClipboard}
                                 imageCopied={imageCopied}
                             />
+                            <DealsPromotionCard />
                         </>
                     )}
                 </div>

@@ -28,6 +28,7 @@ import {
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
+import DealsPromotionCard from "../sidepanel/deals-promotion-card";
 
 
 export default function Page() {
@@ -387,6 +388,7 @@ export default function Page() {
                   Delete Template
                 </button>
               </div>
+              <DealsPromotionCard />
             </div>
 
             {/* Right Column - Placeholders */}
