@@ -2,12 +2,12 @@ import { Image, Copy, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 import { handlePurchaseRedirect } from "@/utils/utils";
 
 const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToClipboard }) => {
-  const isPro = currentPlan === 'Pro Plan';
+  const isPro = true;
 
   return (
     <div className="w-full bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+      <div className="px-6 py-4 bg-blue-500">
         <h2 className="text-xl font-semibold text-white flex items-center">
           <Image className="w-5 h-5 mr-2" />
           Product Image
@@ -22,14 +22,13 @@ const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToCl
               <img
                 src={productData.image_url}
                 alt="Product"
-                className={`w-full h-64 object-contain transition-all duration-300 ${
-                  !isPro ? 'grayscale blur-[2px]' : ''
-                }`}
+                className={`w-full h-64 object-contain transition-all duration-300 ${!isPro ? 'grayscale blur-[2px]' : ''
+                  }`}
               />
 
               {/* Pro Feature Overlay */}
               {!isPro && (
-                <div 
+                <div
                   className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-6 space-y-4"
                 >
                   <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -60,11 +59,10 @@ const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToCl
               onClick={() => copyImageToClipboard(productData?.image_url)}
               disabled={!isPro}
               className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-medium
-                         transition-all duration-200 ${
-                imageCopied
+                         transition-all duration-200 ${imageCopied
                   ? 'bg-green-50 text-green-600 border border-green-200'
                   : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
-              } disabled:opacity-60 disabled:cursor-not-allowed`}
+                } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               {imageCopied ? (
                 <>
@@ -74,7 +72,7 @@ const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToCl
               ) : (
                 <>
                   <Copy className="w-5 h-5 mr-2" />
-                  Copy Image
+                  Copy High Quality Image
                 </>
               )}
             </button>

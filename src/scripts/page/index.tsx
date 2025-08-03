@@ -28,7 +28,7 @@ import {
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
-import DealsPromotionCard from "../sidepanel/deals-promotion-card";
+import DealsPromotionCard from "../../components/deals-promotion-card";
 
 
 export default function Page() {
@@ -201,7 +201,7 @@ export default function Page() {
             </div>
           </div>
           <div className="flex items-center">
-            <LicenseStatusHeader />
+            {/* <LicenseStatusHeader /> */}
           </div>
         </div>
       </header>

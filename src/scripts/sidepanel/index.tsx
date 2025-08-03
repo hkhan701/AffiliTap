@@ -9,13 +9,12 @@ import { Settings as SettingsIcon, Plus, ArrowLeft, Hash, AlertTriangle, CheckCi
 import logo from 'src/assets/images/logo.svg';
 
 import InfoPopup from '../../components/infoPopup';
-import LicenseStatusHeader from "../../components/licenseStatusHeader";
 import HelpCard from "../../components/helpCard";
 import Settings from "./settings";
 import ProductImageCard from "@/components/productImageCard";
 
 import "../../globals.css";
-import DealsPromotionCard from "./deals-promotion-card";
+import DealsPromotionCard from "../../components/deals-promotion-card";
 
 interface Template {
     id: string;
@@ -92,7 +91,7 @@ export default function SidePanel() {
     const fetchLicenseStatus = async () => {
         const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
         setLicenseStatus(licenseStatus);
-        setCurrentPlan(currentPlan);
+        setCurrentPlan("Pro Plan");
     };
 
     const handleProductDataUpdate = ({ action, data }: { action: string; data: any; }) =>
@@ -282,12 +281,13 @@ export default function SidePanel() {
                         <ArrowLeft className="h-5 w-5" />
                     </button>
                 ) : (
-                    <button
-                        onClick={handleOpenSettings}
-                        className="border-solid border-2 border-black bg-gray-100 text-gray-800 font-semibold p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
-                    >
-                        <SettingsIcon className="h-4 w-4" />
-                    </button>
+                    <>  </>
+                    // <button
+                    //     onClick={handleOpenSettings}
+                    //     className="border-solid border-2 border-black bg-gray-100 text-gray-800 font-semibold p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
+                    // >
+                    //     <SettingsIcon className="h-4 w-4" />
+                    // </button>
                 )}
             </div>
             <div className="p-3">
@@ -303,7 +303,7 @@ export default function SidePanel() {
                         </>
                     ) : (
                         <>
-                            <LicenseStatusHeader />
+                            <DealsPromotionCard />
 
                             <button
                                 onClick={handleAddTemplate}
@@ -457,7 +457,6 @@ export default function SidePanel() {
                                 copyImageToClipboard={copyImageToClipboard}
                                 imageCopied={imageCopied}
                             />
-                            <DealsPromotionCard />
                         </>
                     )}
                 </div>
