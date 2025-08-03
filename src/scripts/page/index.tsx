@@ -6,7 +6,6 @@ import { browserStorage } from "@/utils/browserStorage";
 import { getTrackingIds } from "@/utils/utils";
 
 import ConfirmModal from '../../components/confirmModal';
-import ContentLockOverlay from "../../components/contentLockOverlay";
 import Footer from "../../components/footer";
 import InfoPopup from '../../components/infoPopup';
 import LicenseStatusHeader from "../../components/licenseStatusHeader";
@@ -55,7 +54,6 @@ export default function Page() {
   const [popupType, setPopupType] = useState<'success' | 'error'>('success')
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-  const isContentLocked = licenseStatus !== 'active'
   const activeTemplate = templates.find(t => t.id === activeTemplateId) || defaultTemplate
 
   const handleClosePopup = () => setIsPopupOpen(false)
@@ -170,7 +168,7 @@ export default function Page() {
   const fetchLicenseStatus = async () => {
     const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
     setLicenseStatus(licenseStatus);
-    setCurrentPlan(currentPlan);
+    setCurrentPlan("Pro Plan");
   };
 
   useEffect(() => {

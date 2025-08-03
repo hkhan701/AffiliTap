@@ -1,5 +1,6 @@
 import { browser } from "webextension-polyfill-ts"
 import { getPage } from "@/utils/urls"
+import { browserStorage } from "./browserStorage"
 
 /**
  * Converts a JPEG image URL to a PNG data URL.
@@ -182,3 +183,79 @@ export const handleBillingRedirect = () => {
 export const handleAddTemplate = () => {
   browser.tabs.create({ url: browser.runtime.getURL(getPage("index.html")) })
 }
+
+export interface AiTitleResponse {
+  short_title: string;
+  remaining: number;
+}
+
+export async function getAiGeneratedTitle(fullTitle: string): Promise<AiTitleResponse | null> {
+  try {
+    const userId = await getUserId();
+    
+    const response = await fetch("https://title-summarizer.vercel.app/summarize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        title: fullTitle,
+        user_id: userId 
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error("Rate limit exceeded. Try again tomorrow.");
+      }
+      throw new Error("Failed to fetch AI title");
+    }
+
+    const data = await response.json();
+    return {
+      short_title: data.short_title || null,
+      remaining: data.remaining || 0
+    };
+  } catch (error) {
+    console.error("Error fetching AI title:", error);
+    throw error; // Re-throw to handle in the calling component
+  }
+}
+
+/**
+ * Generates a unique user ID or retrieves existing one from browser storage
+ * @returns {Promise<string>} The user ID
+ */
+export const getUserId = async (): Promise<string> => {
+  try {
+    // Try to get existing user ID from storage
+    const existingUserId = await browserStorage.get('userId');
+    
+    if (existingUserId) {
+      return existingUserId;
+    }
+    
+    // Generate a new user ID if none exists
+    const newUserId = generateUniqueId();
+    
+    // Store the new user ID
+    await browserStorage.set('userId', newUserId);
+    
+    return newUserId;
+  } catch (error) {
+    console.error('Error managing user ID:', error);
+    // Fallback to a simple ID if storage fails
+    return generateUniqueId();
+  }
+};
+
+/**
+ * Generates a unique ID without external libraries
+ * @returns {string} A unique identifier
+ */
+const generateUniqueId = (): string => {
+  // Use timestamp + random number for uniqueness
+  const timestamp = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 15);
+  const additionalRandom = Math.random().toString(36).substring(2, 15);
+  
+  return `user_${timestamp}_${randomPart}_${additionalRandom}`;
+};

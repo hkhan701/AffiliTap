@@ -2,9 +2,9 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect } from "@/utils/utils";
+import { handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect, getAiGeneratedTitle } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
-import { Settings as SettingsIcon, Plus, ArrowLeft, Hash, AlertTriangle, CheckCircle, Copy, Eye, Lock, AlertCircle, ChevronDown, Layers3 } from 'lucide-react';
+import { Settings as SettingsIcon, Plus, ArrowLeft, Hash, AlertTriangle, CheckCircle, Copy, Eye, Lock, AlertCircle, ChevronDown, Layers3, Sparkle, Sparkles } from 'lucide-react';
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
@@ -37,6 +37,11 @@ export default function SidePanel() {
     const [imageCopied, setImageCopied] = useState(false);
     const [templates, setTemplates] = useState<Template[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+    const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
+    const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
+
+
 
     const [previewText, setPreviewText] = useState<string>("");
 
@@ -66,8 +71,6 @@ export default function SidePanel() {
     const handleTemplateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedTemplate(event.target.value);
     };
-
-    const isContentLocked = licenseStatus !== 'active';
 
     const fetchProductData = async () => {
         const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -170,14 +173,12 @@ export default function SidePanel() {
         return processedTemplate.trim();
     }
 
-    const generatePreviewText = async (templateContent: string): Promise<string> => {
-        if (!productData) {
-            return "No product data available. Loading...";
-        }
+    const generatePreviewText = async (templateContent: string, overrideTitle?: string): Promise<string> => {
+        if (!productData) return "No product data available. Loading...";
 
         const currentTemplate = templates.find(t => t.id === selectedTemplate);
         const amz_link = await getShortUrl(currentTemplate?.trackingId);
-        const limitedTitle = shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
+        const limitedTitle = overrideTitle ? overrideTitle : shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
 
         // Define placeholder replacements
         const replacements: { [key: string]: string | undefined } = {
@@ -261,6 +262,32 @@ export default function SidePanel() {
             setIsPopupOpen(true);
         }
     };
+
+
+
+    const handleAiReplaceTitle = async () => {
+        if (!productData?.product_name) return;
+
+        setIsGeneratingTitle(true);
+        setAiError(null);
+
+        try {
+            const result = await getAiGeneratedTitle(productData.product_name);
+            if (!result || !result.short_title) throw new Error("No title returned");
+
+            setRemainingUsage(result.remaining);
+
+            const selectedTemplateContent = templates.find(t => t.id === selectedTemplate)?.content || "";
+            const newPreview = await generatePreviewText(selectedTemplateContent, result.short_title);
+            setPreviewText(newPreview);
+        } catch (error) {
+            setAiError(error instanceof Error ? error.message : "Failed to generate title");
+        } finally {
+            setIsGeneratingTitle(false);
+        }
+    };
+
+
 
     const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
     const hasProPlaceholders = checkForProPlaceholders(selectedTemplateData?.content);
@@ -365,9 +392,11 @@ export default function SidePanel() {
                                 )}
                             </div>
 
+
+
+
                             {/* Post Preview */}
                             <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-
                                 {/* Header Section */}
                                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-500 to-blue-600">
                                     <div className="flex items-center justify-between">
@@ -407,6 +436,67 @@ export default function SidePanel() {
                                             </code>
                                         </div>
                                     )}
+
+                                    <div className="mt-4 space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={handleAiReplaceTitle}
+                                                disabled={isGeneratingTitle || !productData}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+        ${isGeneratingTitle ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
+        text-purple-800 font-medium shadow-sm disabled:opacity-50`}
+                                            >
+                                                <Sparkles className="h-5 w-5" />
+                                                {isGeneratingTitle ? "Generating..." : "Generate AI Title"}
+                                            </button>
+
+                                            <button
+                                                disabled={true}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+        text-purple-800 font-medium shadow-sm disabled:opacity-50`}
+                                            >
+                                                <Sparkles className="h-5 w-5" />
+                                                {"Generate AI Post (Coming Soon)"}
+                                            </button>
+
+                                            {aiError && (
+                                                <span className="text-red-600 text-sm ml-2">{aiError}</span>
+                                            )}
+                                        </div>
+
+                                        {remainingUsage !== null && (
+                                            <div className="bg-gray-50 rounded-lg p-3 border">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        Daily AI Usage
+                                                    </span>
+                                                    <span className="text-sm text-gray-600">
+                                                        {remainingUsage}/100 remaining
+                                                    </span>
+                                                </div>
+
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                    <div
+                                                        className={`h-2.5 rounded-full transition-all duration-500 ${remainingUsage > 50
+                                                            ? 'bg-green-500'
+                                                            : remainingUsage > 20
+                                                                ? 'bg-yellow-500'
+                                                                : 'bg-red-500'
+                                                            }`}
+                                                        style={{ width: `${(remainingUsage / 100) * 100}%` }}
+                                                    />
+                                                </div>
+
+                                                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                                    <span>0</span>
+                                                    <span>50</span>
+                                                    <span>100</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+
 
                                     {/* Preview Content */}
                                     <div className="relative">
