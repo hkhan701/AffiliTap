@@ -1,7 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from 'react';
 
-import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { browserStorage } from "@/utils/browserStorage";
 import { getTrackingIds } from "@/utils/utils";
 
@@ -14,7 +13,6 @@ import {
   ChevronDown,
   FileText,
   Globe,
-  InfoIcon,
   Link,
   PencilLine,
   Plus,
@@ -28,6 +26,8 @@ import {
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
 import DealsPromotionCard from "../../components/deals-promotion-card";
+import LinkTypeNotice from "./linktype-notice";
+import { LinkType, Template } from "@/utils/template_utils";
 
 
 export default function Page() {
@@ -43,12 +43,10 @@ export default function Page() {
     linkType: 'amazon',
   }
 
-  const [templates, setTemplates] = useState([defaultTemplate])
+  const [templates, setTemplates] = useState([defaultTemplate] as Template[])
   const [activeTemplateId, setActiveTemplateId] = useState(defaultTemplate.id)
   const [newTemplateName, setNewTemplateName] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
-  const [licenseStatus, setLicenseStatus] = useState("")
-  const [currentPlan, setCurrentPlan] = useState(null)
 
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupMessage, setPopupMessage] = useState("")
@@ -60,12 +58,6 @@ export default function Page() {
   const handleClosePopup = () => setIsPopupOpen(false)
 
   const handleAddTemplate = () => {
-    if (currentPlan !== "Pro Plan" && templates.length >= 5) {
-      setPopupMessage("You can only add up to 5 templates on the Free plan. Upgrade to the Pro plan to UNLIMITED templates.");
-      setPopupType("error");
-      setIsPopupOpen(true);
-      return;
-    }
     if (newTemplateName.trim()) {
       const id = Date.now().toString(36) + Math.random().toString(36).substring(2)
       const newTemplate = {
@@ -76,7 +68,7 @@ export default function Page() {
         trackingId: trackingIds[0]?.id || '',
         isDefault: false,
         linkType: 'amazon'
-      }
+      } as Template;
       setTemplates([...templates, newTemplate])
       setActiveTemplateId(newTemplate.id)
       setNewTemplateName('')
@@ -116,7 +108,7 @@ export default function Page() {
 
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
-      setTemplates(updatedTemplates)
+      setTemplates(updatedTemplates as Template[])
       setPopupMessage("Template saved successfully")
       setPopupType('success')
       setHasChanges(false)
@@ -176,14 +168,7 @@ export default function Page() {
     }
   }
 
-  const fetchLicenseStatus = async () => {
-    const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
-    setLicenseStatus(licenseStatus);
-    setCurrentPlan("Pro Plan");
-  };
-
   useEffect(() => {
-    fetchLicenseStatus()
     fetchTemplates()
     getTrackingIds().then((ids) => setTrackingIds(ids));
   }, [])
@@ -389,41 +374,14 @@ export default function Page() {
                     <option value="amazon">Amazon Short Link</option>
                     <option value="posttap">PostTap</option>
                     <option value="joylink">JoyLink</option>
+                    <option value="geniuslink">GeniusLink</option>
                   </select>
                   <p className="text-xs text-gray-500 mt-1">Choose how affiliate links will be generated for this template</p>
                 </div>
 
                 {/* Login Notice for Deep Linkers */}
                 {activeTemplate.linkType && activeTemplate.linkType !== 'amazon' && (
-                  <div className="flex items-start space-x-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <InfoIcon className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-amber-800">
-                      <p className="font-medium mb-1">Important</p>
-                      <p>
-                        You must be logged in to{' '}
-                        {activeTemplate.linkType === 'posttap' ? (
-                          <a
-                            href="https://creators.posttap.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium underline hover:no-underline transition-all"
-                          >
-                            PostTap
-                          </a>
-                        ) : (
-                          <a
-                            href="https://joylink.io"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium underline hover:no-underline transition-all"
-                          >
-                            JoyLink
-                          </a>
-                        )}{' '}
-                        in your browser to generate links using this service.
-                      </p>
-                    </div>
-                  </div>
+                  <LinkTypeNotice linkType={activeTemplate.linkType as LinkType} />
                 )}
               </div>
 

@@ -2,9 +2,10 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, handleBillingRedirect, getAiGeneratedTitle } from "@/utils/utils";
+import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, getAiGeneratedTitle } from "@/utils/utils";
+import { Template } from "@/utils/template_utils";
 import { browserStorage } from "@/utils/browserStorage";
-import { Plus, ArrowLeft, Hash, AlertTriangle, CheckCircle, Copy, Eye, AlertCircle, ChevronDown, Layers3, Sparkles, Link } from 'lucide-react';
+import { Plus, ArrowLeft, Hash, CheckCircle, Copy, AlertCircle, ChevronDown, Sparkles, Link } from 'lucide-react';
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
@@ -16,15 +17,6 @@ import ProductImageCard from "@/components/productImageCard";
 import "../../globals.css";
 import DealsPromotionCard from "../../components/deals-promotion-card";
 
-interface Template {
-    id: string;
-    name: string;
-    content: string;
-    titleWordLimit: number;
-    trackingId: string;
-    isDefault: boolean;
-    linkType?: 'amazon' | 'posttap' | 'joylink' | 'geniuslink';
-}
 
 export default function SidePanel() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -349,44 +341,6 @@ export default function SidePanel() {
                             </button>
 
                             <div className="relative">
-                                {/* Select Label and Control Container */}
-                                <div className="flex items-center gap-4">
-                                    <label htmlFor="template-select" className="text-gray-700 font-medium whitespace-nowrap text-lg">
-                                        Select template:
-                                    </label>
-
-                                    {/* Floating Label Style Select */}
-                                    <div className="relative flex items-center flex-1">
-                                        <div className="relative flex-1">
-                                            <select
-                                                id="template-select"
-                                                value={selectedTemplate}
-                                                onChange={handleTemplateChange}
-                                                className="w-full appearance-none pl-10 pr-10 py-2.5 bg-white 
-                            text-gray-700 border border-gray-200 rounded-lg
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                            transition-all duration-200 hover:border-gray-300"
-                                                aria-label="Select template"
-                                            >
-                                                {templates.length > 0 ? (
-                                                    templates.map((template) => (
-                                                        <option key={template.id} value={template.id}>
-                                                            {template.name} {template.isDefault && '(Default)'}
-                                                        </option>
-                                                    ))
-                                                ) : (
-                                                    <option disabled>No templates available</option>
-                                                )}
-                                            </select>
-
-                                            {/* Template Icon */}
-                                            <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-
-                                            {/* Dropdown Icon */}
-                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                        </div>
-                                    </div>
-                                </div>
 
                                 {/* Empty State Message - Only shown when no templates */}
                                 {templates.length === 0 && (
@@ -406,36 +360,64 @@ export default function SidePanel() {
                             {/* Post Preview */}
                             <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
                                 {/* Header Section */}
-                                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-500 to-blue-600">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-2">
-                                            <Eye className="h-5 w-5 text-white" />
-                                            <h2 className="text-lg font-semibold text-white">Post Preview</h2>
+                                <div className="p-4 border-b border-gray-100 bg-blue-500">
+                                    <div className="relative">
+                                        {/* Select Label and Control Container */}
+                                        <div className="flex items-center gap-4">
+                                            <label htmlFor="template-select" className="text-white font-medium whitespace-nowrap text-lg">
+                                                Select template:
+                                            </label>
+
+                                            {/* Floating Label Style Select */}
+                                            <div className="relative flex items-center flex-1">
+                                                <div className="relative flex-1">
+                                                    <select
+                                                        id="template-select"
+                                                        value={selectedTemplate}
+                                                        onChange={handleTemplateChange}
+                                                        className="w-full appearance-none pl-2 pr-10 py-2.5 bg-white 
+                            text-gray-700 border border-gray-200 rounded-lg
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                            transition-all duration-200 hover:border-gray-300"
+                                                        aria-label="Select template"
+                                                    >
+                                                        {templates.length > 0 ? (
+                                                            templates.map((template) => (
+                                                                <option key={template.id} value={template.id}>
+                                                                    {template.name} {template.isDefault && '(Default)'}
+                                                                </option>
+                                                            ))
+                                                        ) : (
+                                                            <option disabled>No templates available</option>
+                                                        )}
+                                                    </select>
+
+                                                    {/* Template Icon */}
+                                                    {/* <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" /> */}
+
+                                                    {/* Dropdown Icon */}
+                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {/* Empty State Message - Only shown when no templates */}
+                                        {templates.length === 0 && (
+                                            <div className="absolute top-full left-0 right-0 mt-2">
+                                                <div className="flex items-center justify-center p-2 bg-gray-50 
+                                rounded-lg border border-gray-200 text-gray-500 text-sm">
+                                                    <AlertCircle className="mr-1.5 h-4 w-4" />
+                                                    No templates available
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="p-4 space-y-4">
-                                    {/* Pro Plan Alert */}
-                                    {showProAlert && (
-                                        <div className="flex items-start p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                                            <div className="ml-3">
-                                                <p className="text-sm text-amber-800">
-                                                    This template contains Pro-only placeholders.{' '}
-                                                    <button
-                                                        onClick={handleBillingRedirect}
-                                                        className="font-medium text-blue-600 hover:text-blue-700 focus:outline-none focus:underline transition-colors"
-                                                    >
-                                                        Upgrade to unlock
-                                                    </button>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
 
                                     {/* Tracking ID and Link Type Badges */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {/* Tracking ID Badge */}
                                         {selectedTemplateData?.trackingId && (
                                             <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
@@ -523,7 +505,7 @@ export default function SidePanel() {
                                         <div className="bg-gray-50 rounded-lg border border-gray-200">
                                             <div className="px-4 py-3 border-b border-gray-200 bg-gray-100/50">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-medium text-gray-600">Content</span>
+                                                    <span className="text-sm font-medium text-gray-600">Post Preview</span>
                                                     <button
                                                         onClick={() => copyToClipboard(previewText)}
                                                         className={`
