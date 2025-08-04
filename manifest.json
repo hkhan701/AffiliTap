@@ -4,7 +4,7 @@
   "description": "AffiliTap instantly populates custom templates with Amazon product information, helping you create engaging posts in seconds.",
   "version": "1.27",
   "permissions": ["storage", "activeTab", "clipboardWrite", "alarms", "sidePanel"],
-  "host_permissions": ["*://*.amazon.ca/*", "*://*.amazon.com/*", "https://api.lemonsqueezy.com/*", "https://title-summarizer.vercel.app/*"],
+  "host_permissions": ["*://*.amazon.ca/*", "*://*.amazon.com/*", "https://title-summarizer.vercel.app/*", "https://joylink.io/*", "https://creators.posttap.com/*", "https://my.geniuslink.com/*"],
   "icons": {
     "16": "assets/images/icon-16.png",
     "32": "assets/images/icon-16.png",

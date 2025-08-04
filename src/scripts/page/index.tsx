@@ -8,14 +8,14 @@ import { getTrackingIds } from "@/utils/utils";
 import ConfirmModal from '../../components/confirmModal';
 import Footer from "../../components/footer";
 import InfoPopup from '../../components/infoPopup';
-import LicenseStatusHeader from "../../components/licenseStatusHeader";
 import Placeholders from "../../components/placeholders";
 
 import {
   ChevronDown,
   FileText,
   Globe,
-  Lock,
+  InfoIcon,
+  Link,
   PencilLine,
   Plus,
   Save,
@@ -39,7 +39,8 @@ export default function Page() {
     content: defaultContent,
     titleWordLimit: 10,
     trackingId: trackingIds[0]?.id || '',
-    isDefault: true
+    isDefault: true,
+    linkType: 'amazon',
   }
 
   const [templates, setTemplates] = useState([defaultTemplate])
@@ -73,7 +74,8 @@ export default function Page() {
         content: '',
         titleWordLimit: 10,
         trackingId: trackingIds[0]?.id || '',
-        isDefault: false
+        isDefault: false,
+        linkType: 'amazon'
       }
       setTemplates([...templates, newTemplate])
       setActiveTemplateId(newTemplate.id)
@@ -138,8 +140,17 @@ export default function Page() {
     const storedTemplates = await browserStorage.get('templates')
     if (storedTemplates) {
       const templatesData = JSON.parse(storedTemplates)
-      setTemplates(templatesData)
-      const defaultTemplate = templatesData.find(t => t?.isDefault) || templatesData[0]
+      // Ensure all templates have a linkType (default to 'amazon' for backward compatibility)
+      const updatedTemplates = templatesData.map(template => ({
+        ...template,
+        linkType: template.linkType || 'amazon'
+      }));
+      setTemplates(updatedTemplates)
+
+      // Save the updated templates back to storage
+      await browserStorage.set('templates', JSON.stringify(updatedTemplates));
+
+      const defaultTemplate = updatedTemplates.find(t => t?.isDefault) || updatedTemplates[0]
       if (defaultTemplate) {
         setActiveTemplateId(defaultTemplate.id)
       }
@@ -362,6 +373,58 @@ export default function Page() {
                   />
                   <p className="text-xs text-gray-500 mt-1">The maximum number of words in the product title</p>
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Link size={16} className="mr-2" />
+                    Link Generation Type
+                  </label>
+                  <select
+                    value={activeTemplate.linkType || 'amazon'}
+                    onChange={(e) => updateActiveTemplate({ linkType: e.target.value })}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 bg-white transition-all"
+                  >
+                    <option value="amazon">Amazon Short Link</option>
+                    <option value="posttap">PostTap</option>
+                    <option value="joylink">JoyLink</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Choose how affiliate links will be generated for this template</p>
+                </div>
+
+                {/* Login Notice for Deep Linkers */}
+                {activeTemplate.linkType && activeTemplate.linkType !== 'amazon' && (
+                  <div className="flex items-start space-x-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <InfoIcon className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-medium mb-1">Important</p>
+                      <p>
+                        You must be logged in to{' '}
+                        {activeTemplate.linkType === 'posttap' ? (
+                          <a
+                            href="https://creators.posttap.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium underline hover:no-underline transition-all"
+                          >
+                            PostTap
+                          </a>
+                        ) : (
+                          <a
+                            href="https://joylink.io"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium underline hover:no-underline transition-all"
+                          >
+                            JoyLink
+                          </a>
+                        )}{' '}
+                        in your browser to generate links using this service.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

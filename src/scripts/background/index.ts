@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { browser } from "webextension-polyfill-ts"
-import { verifyLicenseKey } from "@/utils/license"
 import { getTrackingIds } from "@/utils/utils"
 import { browserStorage } from "@/utils/browserStorage"
 
@@ -28,16 +27,16 @@ browser.runtime.onInstalled.addListener((): void => {
   })
 })
 
-browser.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === "CHECK-LICENSE") {
-    await verifyLicenseKey()
-  }
-})
+// browser.alarms.onAlarm.addListener(async (alarm) => {
+//   if (alarm.name === "CHECK-LICENSE") {
+//     await verifyLicenseKey()
+//   }
+// })
 
-browser.alarms.create("CHECK-LICENSE", {
-  when: Date.now() + 10,
-  periodInMinutes: 30,
-}) // validate license every 30 mins
+// browser.alarms.create("CHECK-LICENSE", {
+//   when: Date.now() + 10,
+//   periodInMinutes: 30,
+// }) // validate license every 30 mins
 
 // Listen for product data updates from the content script
 browser.runtime.onMessage.addListener(async (message) => {

@@ -2,9 +2,9 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { browser } from "webextension-polyfill-ts";
 import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handleAddTemplate, getShortUrl, shortenProductName, convertJpgToPng, handleBillingRedirect, getAiGeneratedTitle } from "@/utils/utils";
+import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, handleBillingRedirect, getAiGeneratedTitle } from "@/utils/utils";
 import { browserStorage } from "@/utils/browserStorage";
-import { Settings as SettingsIcon, Plus, ArrowLeft, Hash, AlertTriangle, CheckCircle, Copy, Eye, Lock, AlertCircle, ChevronDown, Layers3, Sparkle, Sparkles } from 'lucide-react';
+import { Plus, ArrowLeft, Hash, AlertTriangle, CheckCircle, Copy, Eye, AlertCircle, ChevronDown, Layers3, Sparkles, Link } from 'lucide-react';
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
@@ -23,6 +23,7 @@ interface Template {
     titleWordLimit: number;
     trackingId: string;
     isDefault: boolean;
+    linkType?: 'amazon' | 'posttap' | 'joylink' | 'geniuslink';
 }
 
 export default function SidePanel() {
@@ -40,9 +41,6 @@ export default function SidePanel() {
     const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
-
-
-
     const [previewText, setPreviewText] = useState<string>("");
 
     const handleOpenSettings = () => setIsSettingsOpen(true);
@@ -57,13 +55,21 @@ export default function SidePanel() {
 
     const fetchTemplates = async () => {
         const storedTemplates = await browserStorage.get('templates');
-        // store template as array
         if (storedTemplates) {
             const templatesData = JSON.parse(storedTemplates);
-            setTemplates(templatesData);
-            const defaultTemplate = templatesData.find(t => t.isDefault) || templatesData[0]
+            // Ensure all templates have a linkType (default to 'amazon' for backward compatibility)
+            const updatedTemplates = templatesData.map(template => ({
+                ...template,
+                linkType: template.linkType || 'amazon'
+            }));
+            setTemplates(updatedTemplates);
+
+            // Save the updated templates back to storage
+            await browserStorage.set('templates', JSON.stringify(updatedTemplates));
+
+            const defaultTemplate = updatedTemplates.find(t => t.isDefault) || updatedTemplates[0];
             if (defaultTemplate) {
-                setSelectedTemplate(defaultTemplate.id)
+                setSelectedTemplate(defaultTemplate.id);
             }
         }
     };
@@ -177,7 +183,9 @@ export default function SidePanel() {
         if (!productData) return "No product data available. Loading...";
 
         const currentTemplate = templates.find(t => t.id === selectedTemplate);
-        const amz_link = await getShortUrl(currentTemplate?.trackingId);
+        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+        const currentUrl = tabs[0]?.url || '';
+        const amz_link = await getLinkByType(currentUrl, currentTemplate?.linkType || 'amazon', currentTemplate?.trackingId);
         const limitedTitle = overrideTitle ? overrideTitle : shortenProductName(productData.product_name, currentTemplate?.titleWordLimit);
 
         // Define placeholder replacements
@@ -426,16 +434,30 @@ export default function SidePanel() {
                                         </div>
                                     )}
 
-                                    {/* Tracking ID Badge */}
-                                    {selectedTemplateData?.trackingId && (
-                                        <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                                            <Hash className="h-4 w-4 text-gray-500" />
-                                            <span className="font-medium">Tracking ID:</span>
-                                            <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
-                                                {selectedTemplateData.trackingId}
-                                            </code>
-                                        </div>
-                                    )}
+                                    {/* Tracking ID and Link Type Badges */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {/* Tracking ID Badge */}
+                                        {selectedTemplateData?.trackingId && (
+                                            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
+                                                <Hash className="h-4 w-4 text-gray-500" />
+                                                <span className="font-medium">Tracking ID:</span>
+                                                <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
+                                                    {selectedTemplateData.trackingId}
+                                                </code>
+                                            </div>
+                                        )}
+
+                                        {/* Link Type Badge */}
+                                        {selectedTemplateData?.linkType && (
+                                            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
+                                                <Link className="h-4 w-4 text-gray-500" />
+                                                <span className="font-medium">Link Type:</span>
+                                                <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
+                                                    {selectedTemplateData.linkType}
+                                                </code>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <div className="mt-4 space-y-3">
                                         <div className="flex items-center gap-2">
@@ -495,8 +517,6 @@ export default function SidePanel() {
                                             </div>
                                         )}
                                     </div>
-
-
 
                                     {/* Preview Content */}
                                     <div className="relative">

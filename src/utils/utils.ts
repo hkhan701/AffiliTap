@@ -259,3 +259,134 @@ const generateUniqueId = (): string => {
   
   return `user_${timestamp}_${randomPart}_${additionalRandom}`;
 };
+
+export const getLinkByType = async (url: string, linkType: string = 'amazon', trackingId?: string): Promise<string> => {
+        switch (linkType) {
+            case 'posttap':
+                const postTapResult = await fetchPostTapLink(url);
+                return postTapResult.link || url;
+            case 'joylink':
+                const joyLinkResult = await fetchJoyLink(url);
+                return joyLinkResult.link || url;
+            case 'geniuslink':
+                const geniusResult = await fetchGeniusLink(url, trackingId || "");
+                return geniusResult.link || url;
+            case 'amazon':
+              return await getShortUrl(trackingId || '');
+            default:
+                return await getShortUrl(trackingId || '');
+        }
+};
+
+export async function fetchJoyLink(url: string): Promise<{ link: string; error: string }> {
+  try {
+    const response = await fetch('https://joylink.io/api/private/link/create-link', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': '*/*',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ destination: url }),
+    });
+
+    if (response.status === 307) {
+      throw new Error('Redirected. Login required.');
+    }
+
+    const data = await response.json();
+    return { link: data?.url || '', error: '' };
+  } catch (err: any) {
+    console.error('JoyLink error:', err);
+    return { link: '', error: err.message || 'Unknown error' };
+  }
+}
+
+export async function fetchPostTapLink(url: string): Promise<{ link: string; error: string }> {
+  try {
+    const validateRes = await fetch('https://creators.posttap.com/api/validate-url', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    const validateData = await validateRes.json();
+    if (validateData?.meta?.status !== 'ok') {
+      throw new Error(validateData?.error?.message || 'Validation failed');
+    }
+
+    const shortName = generateUniqueName(8);
+    const createRes = await fetch('https://creators.posttap.com/api/create-shortlink', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: shortName, url, tags: [] }),
+    });
+
+    const createData = await createRes.json();
+    if (!createRes.ok) {
+      throw new Error(createData?.error?.message || 'Link creation failed');
+    }
+
+    return { link: createData?.object?.shortlink || '', error: '' };
+  } catch (err: any) {
+    console.error('PostTap error:', err);
+    return { link: '', error: err.message || 'Unknown error' };
+  }
+}
+
+function generateUniqueName(length: number): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 2 + length);
+  return `${timestamp}_${random}`;
+}
+
+async function fetchGeniusLink(url: string, groupId: string) {
+  try {
+    const params = new URLSearchParams();
+    params.append("url", url);
+    params.append("tsid", groupId);
+    params.append("linkCreatorSetting", "Simple");
+    params.append("trackingCode", "");
+    params.append("skipAffiliateRedirect", "0");
+    params.append("vanityCode", "");
+    params.append("placeholderCode", "Optional custom link text");
+    params.append("bulkMode", "0");
+    params.append("overrides", "");
+    params.append("domain", "geni.us");
+    params.append("note", "");
+    params.append("trackingpixels", "");
+    params.append("applepreference", "0");
+    params.append("affiliationdisabled", "false");
+
+    const res = await fetch("https://my.geniuslink.com/v1/links/add", {
+      method: "POST",
+      credentials: "include",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json, text/javascript, */*; q=0.01",
+        "Accept-Language": "en-US,en;q=0.9",
+        Origin: "https://my.geniuslink.com",
+        Referer: "https://my.geniuslink.com/links",
+      },
+      body: params.toString(),
+    });
+
+    if (!res.ok) throw new Error("Failed to generate GeniusLink");
+
+    const data = await res.json();
+    const link = `https://${data.linkResponses?.[0]?.domain}/${data.linkResponses?.[0]?.code}`;
+    return { link, error: "" };
+  } catch (err) {
+    console.error("GeniusLink error:", err);
+    return { link: "", error: err.message || "Unknown error" };
+  }
+}

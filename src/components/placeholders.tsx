@@ -34,7 +34,7 @@ export default function Placeholders({ isContentLocked = false }) {
             { key: '{dynamic_checkout_discount}', description: 'Dynamic checkout discount populates either {checkout_discount_$} or {checkout_discount_%} based on what exists', image: checkout_discount },
             { key: '{final_price}', description: 'Price calculated after coupons and promo codes' },
             { key: '{rating}', description: 'Rating of the product out of 5 stars' },
-            { key: '{amz_link}', description: 'Your SiteStripe Amazon affliate link of the product' }]
+            { key: '{amz_link}', description: 'Your Amazon affiliate link for the product (based on your link type setting)' }]
 
     const handleCopyPlaceholder = (key: string) => {
         navigator.clipboard.writeText(key);
@@ -76,10 +76,9 @@ export default function Placeholders({ isContentLocked = false }) {
                             <button
                                 onClick={() => handleCopyPlaceholder(key)}
                                 className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200
-                                    ${
-                                        copiedPlaceholder === key
-                                            ? 'bg-green-50 text-green-600 border border-green-200'
-                                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                                    ${copiedPlaceholder === key
+                                        ? 'bg-green-50 text-green-600 border border-green-200'
+                                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                                     }
                                     disabled:opacity-50 disabled:cursor-not-allowed
                                     focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
