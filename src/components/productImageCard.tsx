@@ -1,9 +1,6 @@
-import { Image, Copy, Lock, CheckCircle, AlertCircle } from 'lucide-react';
-import { handlePurchaseRedirect } from "@/utils/utils";
+import { Image, Copy, CheckCircle, AlertCircle } from 'lucide-react';
 
-const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToClipboard }) => {
-  const isPro = true;
-
+const ProductImageCard = ({ productData, imageCopied, copyImageToClipboard }) => {
   return (
     <div className="w-full bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
@@ -22,42 +19,14 @@ const ProductImageCard = ({ productData, currentPlan, imageCopied, copyImageToCl
               <img
                 src={productData.image_url}
                 alt="Product"
-                className={`w-full h-64 object-contain transition-all duration-300 ${!isPro ? 'grayscale blur-[2px]' : ''
-                  }`}
+                className={`w-full h-64 object-contain transition-all duration-300}`}
               />
 
-              {/* Pro Feature Overlay */}
-              {!isPro && (
-                <div
-                  className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-6 space-y-4"
-                >
-                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Lock className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-white font-medium text-lg mb-1">
-                      Pro Feature
-                    </p>
-                    <p className="text-white/80 text-sm mb-4">
-                      Upgrade to Pro to copy product images
-                    </p>
-                    <button
-                      onClick={handlePurchaseRedirect}
-                      className="px-6 py-2 bg-white text-blue-600 rounded-lg font-medium
-                               transform hover:scale-105 transition-all duration-200
-                               focus:outline-none focus:ring-2 focus:ring-white/50"
-                    >
-                      Upgrade Now
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Copy Button */}
             <button
               onClick={() => copyImageToClipboard(productData?.image_url)}
-              disabled={!isPro}
               className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-medium
                          transition-all duration-200 ${imageCopied
                   ? 'bg-green-50 text-green-600 border border-green-200'

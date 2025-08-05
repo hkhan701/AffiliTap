@@ -11,7 +11,6 @@ import logo from 'src/assets/images/logo.svg';
 
 import InfoPopup from '../../components/infoPopup';
 import HelpCard from "../../components/helpCard";
-import Settings from "./settings";
 import ProductImageCard from "@/components/productImageCard";
 
 import "../../globals.css";
@@ -19,9 +18,6 @@ import DealsPromotionCard from "../../components/deals-promotion-card";
 
 
 export default function SidePanel() {
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [licenseStatus, setLicenseStatus] = useState("");
-    const [currentPlan, setCurrentPlan] = useState<string | null>(null);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
     const [popupType, setPopupType] = useState<'success' | 'error'>('success');
@@ -34,16 +30,9 @@ export default function SidePanel() {
     const [aiError, setAiError] = useState<string | null>(null);
     const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
     const [previewText, setPreviewText] = useState<string>("");
+    const isSettingsOpen = false; // Placeholder for settings state
 
-    const handleOpenSettings = () => setIsSettingsOpen(true);
-    const handleBack = () => setIsSettingsOpen(false);
     const handleClosePopup = () => setIsPopupOpen(false);
-
-    const PRO_ONLY_PLACEHOLDERS = ["{coupon_$}", "{coupon_%}", "{promo_code}", "{promo_code_%}"];
-
-    const checkForProPlaceholders = (templateContent: string): boolean => {
-        return PRO_ONLY_PLACEHOLDERS.some((placeholder) => templateContent?.includes(placeholder));
-    };
 
     const fetchTemplates = async () => {
         const storedTemplates = await browserStorage.get('templates');
@@ -89,18 +78,11 @@ export default function SidePanel() {
         }
     };
 
-    const fetchLicenseStatus = async () => {
-        const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
-        setLicenseStatus(licenseStatus);
-        setCurrentPlan("Pro Plan");
-    };
-
     const handleProductDataUpdate = ({ action, data }: { action: string; data: any; }) =>
         action === "UPDATE_PRODUCT_DATA" && setProductData(data);
 
     useEffect(() => {
         fetchProductData();
-        fetchLicenseStatus();
         fetchTemplates();
 
         // Listen for product data updates from the background script
@@ -190,27 +172,23 @@ export default function SidePanel() {
             amz_link: amz_link,
         };
 
-        if (currentPlan === "Pro Plan") {
-            Object.assign(replacements, {
-                "coupon_\x24": productData.coupon_amount,
-                "coupon_%": productData.coupon_percent,
-                dynamic_coupon: productData.dynamic_coupon,
-                promo_code: productData.promo_code,
-                "promo_code_%": productData.promo_code_percent_off,
-                "checkout_discount_\x24": productData.checkout_discount_amount,
-                "checkout_discount_%": productData.checkout_discount_percent,
-                "dynamic_checkout_discount": productData.dynamic_checkout_discount,
-                final_price: productData.final_price,
-            });
-        }
+        Object.assign(replacements, {
+            "coupon_\x24": productData.coupon_amount,
+            "coupon_%": productData.coupon_percent,
+            dynamic_coupon: productData.dynamic_coupon,
+            promo_code: productData.promo_code,
+            "promo_code_%": productData.promo_code_percent_off,
+            "checkout_discount_\x24": productData.checkout_discount_amount,
+            "checkout_discount_%": productData.checkout_discount_percent,
+            "dynamic_checkout_discount": productData.dynamic_checkout_discount,
+            final_price: productData.final_price,
+        });
 
         let preview = processTemplate(templateContent, replacements);
 
         // Replace coupon placeholder since it's a special case
-        if (currentPlan === "Pro Plan") {
-            preview = preview.replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-                .replace(/{checkout_discount\x24}/g, productData.checkout_discount_amount || "")
-        }
+        preview = preview.replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+            .replace(/{checkout_discount\x24}/g, productData.checkout_discount_amount || "")
 
         preview = preview
             .replace(/{product_name}/g, limitedTitle || "")
@@ -218,33 +196,21 @@ export default function SidePanel() {
             .replace(/{list_price}/g, productData.list_price || "")
             .replace(/{discount_percentage}/g, productData.percent_off_list_price || "")
             .replace(/{rating}/g, productData.rating || "")
-            .replace(/{amz_link}/g, amz_link || "");
-
-        if (currentPlan === "Pro Plan") {
-            preview = preview
-                .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
-                .replace(/{coupon_%}/g, productData.coupon_percent || "")
-                .replace(/{dynamic_coupon}/g, productData.dynamic_coupon || "")
-                .replace(/{promo_code}/g, productData.promo_code || "")
-                .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
-                .replace(/{checkout_discount_\x24}/g, productData.checkout_discount_amount || "")
-                .replace(/{checkout_discount_%}/g, productData.checkout_discount_percent || "")
-                .replace(/{dynamic_checkout_discount}/g, productData.dynamic_checkout_discount || "")
-                .replace(/{final_price}/g, productData.final_price || "");
-        }
+            .replace(/{amz_link}/g, amz_link || "")
+            .replace(/{coupon_\x24}/g, productData.coupon_amount || "")
+            .replace(/{coupon_%}/g, productData.coupon_percent || "")
+            .replace(/{dynamic_coupon}/g, productData.dynamic_coupon || "")
+            .replace(/{promo_code}/g, productData.promo_code || "")
+            .replace(/{promo_code_%}/g, productData.promo_code_percent_off || "")
+            .replace(/{checkout_discount_\x24}/g, productData.checkout_discount_amount || "")
+            .replace(/{checkout_discount_%}/g, productData.checkout_discount_percent || "")
+            .replace(/{dynamic_checkout_discount}/g, productData.dynamic_checkout_discount || "")
+            .replace(/{final_price}/g, productData.final_price || "");
 
         return preview;
     };
 
     const copyImageToClipboard = async (imageUrl: string) => {
-
-        if (currentPlan !== "Pro Plan") {
-            setPopupMessage("Upgrade to the Pro plan to copy images.");
-            setPopupType('error');
-            setIsPopupOpen(true);
-            return;
-        }
-
         try {
             const image = await convertJpgToPng(imageUrl);
             const response = await fetch(image);
@@ -287,11 +253,7 @@ export default function SidePanel() {
         }
     };
 
-
-
     const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
-    const hasProPlaceholders = checkForProPlaceholders(selectedTemplateData?.content);
-    const showProAlert = currentPlan !== "Pro Plan" && hasProPlaceholders;
 
     return (
         <div className="bg-blue-100 h-full">
@@ -299,7 +261,7 @@ export default function SidePanel() {
                 <a href="https://affilitap.vercel.app" target="_blank" rel="noopener noreferrer">
                     <img src={logo} alt="logo" width={120} className="transform transition-transform duration-300 hover:scale-105" />
                 </a>
-                {isSettingsOpen ? (
+                {/* {isSettingsOpen ? (
                     <button
                         onClick={handleBack}
                         className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200"
@@ -308,25 +270,25 @@ export default function SidePanel() {
                         <ArrowLeft className="h-5 w-5" />
                     </button>
                 ) : (
-                    <>  </>
-                    // <button
-                    //     onClick={handleOpenSettings}
-                    //     className="border-solid border-2 border-black bg-gray-100 text-gray-800 font-semibold p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
-                    // >
-                    //     <SettingsIcon className="h-4 w-4" />
-                    // </button>
-                )}
+                    
+                    <button
+                        onClick={handleOpenSettings}
+                        className="border-solid border-2 border-black bg-gray-100 text-gray-800 font-semibold p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
+                    >
+                        <SettingsIcon className="h-4 w-4" />
+                    </button>
+                )} */}
             </div>
             <div className="p-3">
                 <div className="flex flex-col items-center space-y-5">
                     {isSettingsOpen ? (
                         <>
-                            <Settings
+                            {/* <Settings
                                 onLicenseUpdate={({ licenseStatus, currentPlan }) => {
                                     setLicenseStatus(licenseStatus);
                                     setCurrentPlan(currentPlan);
                                 }}
-                            />
+                            /> */}
                         </>
                     ) : (
                         <>
@@ -463,10 +425,17 @@ export default function SidePanel() {
                                                 {"Generate AI Post (Coming Soon)"}
                                             </button>
 
-                                            {aiError && (
-                                                <span className="text-red-600 text-sm ml-2">{aiError}</span>
-                                            )}
+
                                         </div>
+                                        {aiError && (
+                                            <div className="flex items-start space-x-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                                <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                                                <div className="text-sm text-red-800">
+                                                    <p className="font-medium mb-1">Error</p>
+                                                    <p>{aiError}</p>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {remainingUsage !== null && (
                                             <div className="bg-gray-50 rounded-lg p-3 border">
@@ -545,7 +514,6 @@ export default function SidePanel() {
 
                             <ProductImageCard
                                 productData={productData}
-                                currentPlan={currentPlan}
                                 copyImageToClipboard={copyImageToClipboard}
                                 imageCopied={imageCopied}
                             />
