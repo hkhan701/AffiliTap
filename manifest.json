@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AffiliTap - Generate Amazon affiliate posts in a single click",
   "description": "AffiliTap instantly populates custom templates with Amazon product information, helping you create engaging posts in seconds.",
-  "version": "1.27",
+  "version": "1.28",
   "permissions": ["storage", "activeTab", "clipboardWrite", "alarms", "sidePanel"],
   "host_permissions": ["*://*.amazon.ca/*", "*://*.amazon.com/*", "https://title-summarizer.vercel.app/*", "https://joylink.io/*", "https://creators.posttap.com/*", "https://my.geniuslink.com/*"],
   "icons": {
