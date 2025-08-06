@@ -247,6 +247,103 @@ export const getUserId = async (): Promise<string> => {
   }
 };
 
+export interface AiPostResponse {
+  post: string;
+  remaining: number;
+}
+
+/**
+ * Generates an AI post using all available templates and product data
+ * @param productData The product information to use in the post
+ * @returns Promise containing the generated post and remaining usage
+ */
+export async function getAiGeneratedPost(
+  productData: string
+): Promise<AiPostResponse> {
+  try {
+    const userId = await getUserId();
+    
+    // Define all template types
+    const templateTypes = [
+      'Promo Code',
+      'Price Drop', 
+      'Clip Coupon',
+      'Checkout Discount',
+      'Custom Instructions'
+    ];
+    
+    // Check for empty templates first
+    const emptyTemplates: string[] = [];
+    const availableTemplates: string[] = [];
+
+    templateTypes.forEach((templateType) => {
+      const template = localStorage.getItem(`prompt-${templateType}`) || '';
+      if (!template.trim()) {
+        emptyTemplates.push(templateType);
+      } else {
+        availableTemplates.push(templateType);
+      }
+    });
+
+    // Return detailed error if any templates are empty
+    if (emptyTemplates.length > 0) {
+      const emptyList = emptyTemplates.join(', ');
+      
+      throw new Error(
+        `Missing AI training templates for: ${emptyList}. \n` +
+        `Please set up all template categories in the "Train Your AI" section before generating posts.`
+      );
+    }
+
+    // Collect all templates into one comprehensive string
+    let combinedTemplate = '';
+
+    templateTypes.forEach((templateType) => {
+      const template = localStorage.getItem(`prompt-${templateType}`) || '';
+      combinedTemplate += `\n\n--- ${templateType} Instructions ---\n${template}`;
+    });
+
+    // Clean up the combined template (remove leading newlines)
+    combinedTemplate = combinedTemplate.trim();
+
+    const response = await fetch("https://title-summarizer.vercel.app/generate_post", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ 
+        user_id: userId,
+        template: combinedTemplate,
+        product: productData
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 400) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Invalid request data");
+      }
+      if (response.status === 429) {
+        throw new Error("Rate limit exceeded. Try again tomorrow.");
+      }
+      if (response.status === 500) {
+        throw new Error("Server error. Please try again later.");
+      }
+      throw new Error(`Failed to generate post: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return {
+      post: data.post || "",
+      remaining: data.remaining || 0
+    };
+  } catch (error) {
+    console.error("Error generating AI post:", error);
+    throw error; // Re-throw to handle in the calling component
+  }
+}
+
 /**
  * Generates a unique ID without external libraries
  * @returns {string} A unique identifier

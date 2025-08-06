@@ -1,11 +1,10 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { browser } from "webextension-polyfill-ts";
-import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
-import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, getAiGeneratedTitle } from "@/utils/utils";
+import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, getAiGeneratedTitle, getAiGeneratedPost } from "@/utils/utils";
 import { Template } from "@/utils/template_utils";
 import { browserStorage } from "@/utils/browserStorage";
-import { Plus, ArrowLeft, Hash, CheckCircle, Copy, AlertCircle, ChevronDown, Sparkles, Link } from 'lucide-react';
+import { Plus, Hash, CheckCircle, Copy, AlertCircle, ChevronDown, Sparkles, Link } from 'lucide-react';
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
@@ -27,6 +26,7 @@ export default function SidePanel() {
     const [templates, setTemplates] = useState<Template[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string>("");
     const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+    const [isGeneratingPost, setIsGeneratingPost] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
     const [previewText, setPreviewText] = useState<string>("");
@@ -253,6 +253,45 @@ export default function SidePanel() {
         }
     };
 
+    const handleAiReplacePost = async () => {
+        if (!productData?.product_name) return;
+
+        setIsGeneratingPost(true);
+        setAiError(null);
+
+        try {
+            // Get the affiliate link like in generatePreviewText
+            const currentTemplate = templates.find(t => t.id === selectedTemplate);
+            const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+            const currentUrl = tabs[0]?.url || '';
+            const affiliate_link = await getLinkByType(currentUrl, currentTemplate?.linkType || 'amazon', currentTemplate?.trackingId);
+
+            // Modify product data by removing dynamic fields and adding affiliate link
+            const modifiedProductData = {
+                ...productData,
+                affiliate_link: affiliate_link,
+                // Remove dynamic fields
+                dynamic_coupon: undefined,
+                dynamic_checkout_discount: undefined
+            };
+
+            // Remove undefined properties to clean up the object
+            const cleanedProductData = Object.fromEntries(
+                Object.entries(modifiedProductData).filter(([_, value]) => value !== undefined)
+            );
+
+            const result = await getAiGeneratedPost(JSON.stringify(cleanedProductData));
+            if (!result || !result.post) throw new Error("No post returned");
+
+            setRemainingUsage(result.remaining);
+            setPreviewText(result.post);
+        } catch (error) {
+            setAiError(error instanceof Error ? error.message : "Failed to generate post");
+        } finally {
+            setIsGeneratingPost(false);
+        }
+    };
+
     const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
 
     return (
@@ -413,16 +452,18 @@ export default function SidePanel() {
         text-purple-800 font-medium shadow-sm disabled:opacity-50`}
                                             >
                                                 <Sparkles className="h-5 w-5" />
-                                                {isGeneratingTitle ? "Generating..." : "Generate AI Title"}
+                                                {isGeneratingTitle ? "Generating..." : "Generate Short AI Title"}
                                             </button>
 
                                             <button
-                                                disabled={true}
+                                                disabled={isGeneratingPost || !productData}
+                                                onClick={() => { handleAiReplacePost() }}
                                                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+        ${isGeneratingPost ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
         text-purple-800 font-medium shadow-sm disabled:opacity-50`}
                                             >
                                                 <Sparkles className="h-5 w-5" />
-                                                {"Generate AI Post (Coming Soon)"}
+                                                {isGeneratingPost ? "Generating..." : "Generate AI Post"}
                                             </button>
 
 

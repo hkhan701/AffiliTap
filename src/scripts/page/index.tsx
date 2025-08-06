@@ -28,6 +28,7 @@ import "../../globals.css"
 import DealsPromotionCard from "../../components/deals-promotion-card";
 import LinkTypeNotice from "./linktype-notice";
 import { LinkType, Template } from "@/utils/template_utils";
+import PromptEditor from "./prompt-editor";
 
 
 export default function Page() {
@@ -195,6 +196,7 @@ export default function Page() {
             </div>
           </div>
           <div className="flex items-center">
+            <DealsPromotionCard />
             {/* <LicenseStatusHeader /> */}
           </div>
         </div>
@@ -390,30 +392,31 @@ export default function Page() {
                 <button
                   onClick={handleSaveTemplate}
                   disabled={!hasChanges}
-                  className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges
-                    ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  className={`flex items-center space-x-2 px-4 py-3 border rounded-lg transition-all duration-200 font-medium ${hasChanges
+                    ? 'bg-green-50 border-green-300 hover:bg-green-100 text-green-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                 >
-                  <Save size={18} className="mr-2" />
-                  Save Changes
+                  <Save className={`h-5 w-5 ${hasChanges ? 'text-green-500' : 'text-gray-400'}`} />
+                  <span>Save Changes</span>
+                  {hasChanges && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>}
                 </button>
 
                 <button
                   onClick={() => setIsConfirmModalOpen(true)}
-                  className="flex items-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  className="flex items-center space-x-2 px-4 py-3 bg-red-50 border border-red-300 hover:bg-red-100 text-red-800 rounded-lg transition-all duration-200 font-medium"
                 >
-                  <Trash2 size={18} className="mr-2" />
-                  Delete Template
+                  <Trash2 className="h-5 w-5 text-red-500" />
+                  <span>Delete Template</span>
                 </button>
               </div>
-              <DealsPromotionCard />
+              <PromptEditor />
             </div>
 
             {/* Right Column - Placeholders */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
-                <Placeholders isContentLocked={false} />
+                <Placeholders />
               </div>
             </div>
           </div>

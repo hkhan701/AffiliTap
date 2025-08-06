@@ -12,7 +12,7 @@ import promo_code_percentage from 'src/assets/images/promo_code_percentage.png';
 import checkout_discount from 'src/assets/images/checkout_discount.png';
 
 
-export default function Placeholders({ isContentLocked = false }) {
+export default function Placeholders() {
     const [copiedPlaceholder, setCopiedPlaceholder] = useState<string | null>(null)
 
     const placeholders: {
