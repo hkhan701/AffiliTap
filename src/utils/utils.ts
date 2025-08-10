@@ -376,7 +376,9 @@ const generateUniqueId = (trackingId?: string): string => {
   return uniqueId;
 };
 
-export const getLinkByType = async (url: string, linkType: string = 'amazon', trackingId?: string): Promise<string> => {
+export type LinkType = 'amazon' | 'posttap' | 'joylink' | 'geniuslink' | 'linktwin';
+
+export const getLinkByType = async (url: string, linkType: LinkType = 'amazon', trackingId?: string): Promise<string> => {
         switch (linkType) {
             case 'posttap':
                 const postTapResult = await fetchPostTapLink(url);
@@ -387,6 +389,9 @@ export const getLinkByType = async (url: string, linkType: string = 'amazon', tr
             case 'geniuslink':
                 const geniusResult = await fetchGeniusLink(url, trackingId || "");
                 return geniusResult.link || url;
+            case 'linktwin':
+                const linkTwinResult = await fetchLinkTwinLink(url);
+                return linkTwinResult.link || url;
             case 'amazon':
               return await getShortUrl(trackingId || '');
             default:
@@ -498,6 +503,46 @@ async function fetchGeniusLink(url: string, groupId: string) {
   } catch (err) {
     console.error("GeniusLink error:", err);
     return { link: "", error: err.message || "Unknown error" };
+  }
+}
+
+async function fetchLinkTwinLink(url: string): Promise<{ link: string; error: string }> {
+  try {
+    // Create FormData with the required fields
+    const formData = new FormData();
+    formData.append('url', url);
+    formData.append('domain', 'https://linktw.in');
+
+    const response = await fetch('https://linktw.in/shorten', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.message || 'LinkTwin API returned an error');
+    }
+
+    return { 
+      link: data.data?.shorturl || '', 
+      error: '' 
+    };
+  } catch (err: any) {
+    console.error('LinkTwin error:', err);
+    return { 
+      link: '', 
+      error: err.message || 'Unknown error' 
+    };
   }
 }
 

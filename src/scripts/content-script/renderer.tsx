@@ -26,6 +26,7 @@ const selectors: Selectors = {
     "span.savingPriceOverride.reinventPriceSavingsPercentageMargin.savingsPercentage"
   ],
   clip_coupon: [
+    "label.ct-coupon-checkbox-label .ct-coupon-tile-price-content .a-offscreen",
     "span.couponLabelText",
     "label[for*='checkboxpct'][id*='couponTextpctch']"
   ],

@@ -1,5 +1,4 @@
-export type LinkType = 'amazon' | 'posttap' | 'joylink' | 'geniuslink';
-
+import { LinkType } from '@/utils/utils';
 export interface Template {
     id: string;
     name: string;

@@ -27,7 +27,8 @@ import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
 import DealsPromotionCard from "../../components/deals-promotion-card";
 import LinkTypeNotice from "./linktype-notice";
-import { LinkType, Template } from "@/utils/template_utils";
+import { LinkType } from "@/utils/utils";
+import { Template } from "@/utils/template_utils";
 import PromptEditor from "./prompt-editor";
 
 
@@ -377,6 +378,7 @@ export default function Page() {
                     <option value="posttap">PostTap</option>
                     <option value="joylink">JoyLink</option>
                     <option value="geniuslink">GeniusLink</option>
+                    <option value="linktwin">LinkTwin</option>
                   </select>
                   <p className="text-xs text-gray-500 mt-1">Choose how affiliate links will be generated for this template</p>
                 </div>

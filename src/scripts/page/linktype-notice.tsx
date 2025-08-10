@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
-import { LinkType } from '@/utils/template_utils';
+import { LinkType } from '@/utils/utils';
 
 interface LinkTypeNoticeProps {
   linkType: LinkType;
@@ -22,6 +22,11 @@ const LinkTypeNotice = ({ linkType }: LinkTypeNoticeProps) => {
         return {
           name: 'GeniusLink',
           url: 'https://my.geniuslink.com'
+        };
+      case 'linktwin':
+        return {
+          name: 'LinkTwin',
+          url: 'https://linktw.in'
         };
       default:
         return null;
