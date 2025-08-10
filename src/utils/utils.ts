@@ -233,8 +233,20 @@ export const getUserId = async (): Promise<string> => {
       return existingUserId;
     }
     
+    // Get the first available tracking ID from Amazon Associates
+    let trackingId = 'no_tracking_id';
+    try {
+      const trackingIds = await getTrackingIds();
+      if (trackingIds && trackingIds.length > 0) {
+        // Use the first available tracking ID
+        trackingId = trackingIds[0]?.id as string;
+      }
+    } catch (error) {
+      console.warn('Could not fetch tracking IDs for user ID generation:', error);
+    }
+    
     // Generate a new user ID if none exists
-    const newUserId = generateUniqueId();
+    const newUserId = generateUniqueId(trackingId);
     
     // Store the new user ID
     await browserStorage.set('userId', newUserId);
@@ -243,7 +255,7 @@ export const getUserId = async (): Promise<string> => {
   } catch (error) {
     console.error('Error managing user ID:', error);
     // Fallback to a simple ID if storage fails
-    return generateUniqueId();
+    return generateUniqueId('no_tracking_id');
   }
 };
 
@@ -346,15 +358,22 @@ export async function getAiGeneratedPost(
 
 /**
  * Generates a unique ID without external libraries
+ * @param {string} trackingId - Optional affiliate tracking ID to append
  * @returns {string} A unique identifier
  */
-const generateUniqueId = (): string => {
+const generateUniqueId = (trackingId?: string): string => {
   // Use timestamp + random number for uniqueness
   const timestamp = Date.now().toString(36);
   const randomPart = Math.random().toString(36).substring(2, 15);
   const additionalRandom = Math.random().toString(36).substring(2, 15);
   
-  return `user_${timestamp}_${randomPart}_${additionalRandom}`;
+  let uniqueId = `user_${timestamp}_${randomPart}_${additionalRandom}`;
+  
+  if (trackingId && trackingId.trim()) {
+    uniqueId += `_${trackingId.trim()}`;
+  }
+  
+  return uniqueId;
 };
 
 export const getLinkByType = async (url: string, linkType: string = 'amazon', trackingId?: string): Promise<string> => {
@@ -375,7 +394,7 @@ export const getLinkByType = async (url: string, linkType: string = 'amazon', tr
         }
 };
 
-export async function fetchJoyLink(url: string): Promise<{ link: string; error: string }> {
+async function fetchJoyLink(url: string): Promise<{ link: string; error: string }> {
   try {
     const response = await fetch('https://joylink.io/api/private/link/create-link', {
       method: 'POST',
@@ -399,7 +418,7 @@ export async function fetchJoyLink(url: string): Promise<{ link: string; error: 
   }
 }
 
-export async function fetchPostTapLink(url: string): Promise<{ link: string; error: string }> {
+async function fetchPostTapLink(url: string): Promise<{ link: string; error: string }> {
   try {
     const validateRes = await fetch('https://creators.posttap.com/api/validate-url', {
       method: 'POST',
@@ -437,12 +456,6 @@ export async function fetchPostTapLink(url: string): Promise<{ link: string; err
     console.error('PostTap error:', err);
     return { link: '', error: err.message || 'Unknown error' };
   }
-}
-
-function generateUniqueName(length: number): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 2 + length);
-  return `${timestamp}_${random}`;
 }
 
 async function fetchGeniusLink(url: string, groupId: string) {
@@ -486,4 +499,10 @@ async function fetchGeniusLink(url: string, groupId: string) {
     console.error("GeniusLink error:", err);
     return { link: "", error: err.message || "Unknown error" };
   }
+}
+
+function generateUniqueName(length: number): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 2 + length);
+  return `${timestamp}_${random}`;
 }
