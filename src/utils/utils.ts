@@ -379,6 +379,7 @@ const generateUniqueId = (trackingId?: string): string => {
 export type LinkType = 'amazon' | 'posttap' | 'joylink' | 'geniuslink' | 'linktwin';
 
 export const getLinkByType = async (url: string, linkType: LinkType = 'amazon', trackingId?: string): Promise<string> => {
+        url = removeTagFromUrl(url);
         switch (linkType) {
             case 'posttap':
                 const postTapResult = await fetchPostTapLink(url);
@@ -550,4 +551,19 @@ function generateUniqueName(length: number): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 2 + length);
   return `${timestamp}_${random}`;
+}
+
+/**
+ * Removes tag query parameter from Amazon URLs
+ * @param url The URL to clean
+ * @returns The URL without tag parameters
+ */
+function removeTagFromUrl(url: string): string {
+    try {
+        const urlObj = new URL(url); 
+        urlObj.searchParams.delete('tag');
+        return urlObj.toString();
+    } catch (error) {
+        return url
+    }
 }
