@@ -158,6 +158,31 @@ function App() {
     return percentOff.toFixed(0);
   };
 
+  const calculateCouponAmount = (clipCouponText: string | null, currentPrice: number | null): number => {
+    if (!clipCouponText) return 0;
+
+    // Special case: Check for "Coupon price" text separately
+    const couponTextElement = document.querySelector("label.ct-coupon-checkbox-label .ct-coupon-tile-text-content .a-text-normal span");
+    const couponTextContent = couponTextElement?.textContent?.trim().toLowerCase();
+
+    if (couponTextContent?.includes('coupon price')) {
+      // Get the price from the existing clip_coupon data (which should contain the price)
+      const couponPriceMatch = clipCouponText.match(/\$([0-9.]+)/);
+      if (couponPriceMatch && currentPrice) {
+        const couponPrice = parseFloat(couponPriceMatch[1]);
+        return parseFloat(currentPrice.toString()) - couponPrice;
+      }
+    } else {
+      // Original logic for direct discount amounts
+      const directDiscountMatch = clipCouponText.match(/\$([0-9.]+)/);
+      if (directDiscountMatch) {
+        return parseFloat(directDiscountMatch[1]);
+      }
+    }
+
+    return 0;
+  };
+
   const getProductData = () => {
 
     // Populate data object using selectors
@@ -188,7 +213,7 @@ function App() {
 
     const list_price = data.list_price ? data.list_price.replace(/[^0-9.]/g, '') : null;
     const percent_off_list_price = calculatePercentOffListPrice(list_price || '', current_price || '');
-    const coupon_amount = data.clip_coupon ? parseFloat(data.clip_coupon.match(/\$([0-9.]+)/)?.[1] || '0') : 0;
+    const coupon_amount = calculateCouponAmount(data.clip_coupon, current_price ? parseFloat(current_price.toString()) : null);
     const coupon_percent = data.clip_coupon ? parseFloat(data.clip_coupon.match(/([0-9.]+)%/)?.[1] || '0') : 0;
     const promo_code = extractPromoCode(data.promo_code);
 
