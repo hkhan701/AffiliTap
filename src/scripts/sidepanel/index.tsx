@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { browser } from "webextension-polyfill-ts";
-import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, getAiGeneratedTitle, getAiGeneratedPost } from "@/utils/utils";
+import { handleAddTemplate, getLinkByType, shortenProductName, convertJpgToPng, getAiGeneratedTitle, getAiGeneratedPost, updateCopied } from "@/utils/utils";
 import { Template } from "@/utils/template_utils";
 import { browserStorage } from "@/utils/browserStorage";
 import { Plus, Hash, CheckCircle, Copy, AlertCircle, ChevronDown, Sparkles, Link } from 'lucide-react';
@@ -92,10 +92,11 @@ export default function SidePanel() {
         };
     }, []);
 
-    const copyToClipboard = (text: string) => {
+    const copyToClipboard = async (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+        await updateCopied();
     };
 
     // This effect will update the preview text whenever product data, the selected template, or templates change

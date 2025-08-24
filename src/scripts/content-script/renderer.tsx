@@ -170,7 +170,7 @@ function App() {
       const couponPriceMatch = clipCouponText.match(/\$([0-9.]+)/);
       if (couponPriceMatch && currentPrice) {
         const couponPrice = parseFloat(couponPriceMatch[1]);
-        return parseFloat(currentPrice.toString()) - couponPrice;
+        return parseFloat((parseFloat(currentPrice.toString()) - couponPrice).toFixed(2));
       }
     } else {
       // Original logic for direct discount amounts

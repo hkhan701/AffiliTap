@@ -567,3 +567,20 @@ function removeTagFromUrl(url: string): string {
         return url
     }
 }
+
+export async function updateCopied(): Promise<void> {
+  try {
+    const userId = await getUserId();
+    
+    await fetch("https://title-summarizer.vercel.app/copied", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify({ 
+        user_id: userId 
+      }),
+    });
+  } catch {
+  }
+}
