@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "AffiliTap",
-  "description": "AffiliTap instantly populates custom templates with Amazon product information, helping you create engaging posts in seconds.",
-  "version": "1.13",
-  "permissions": ["storage", "activeTab", "clipboardWrite", "alarms", "sidePanel"],
-  "host_permissions": ["*://*.amazon.ca/*", "*://*.amazon.com/*"],
+  "name": "AffiliTap - AI Amazon Affiliate Post Generator to Create Posts Instantly",
+  "description": "AI-powered Amazon affiliate marketing tool. Generate social media posts with product data, prices, and affiliate links in one click.",
+  "version": "1.32",
+  "permissions": ["storage", "activeTab", "clipboardWrite", "sidePanel"],
+  "host_permissions": ["*://*.amazon.ca/*", "*://*.amazon.com/*", "https://title-summarizer.vercel.app/*", "https://joylink.io/*", "https://creators.posttap.com/*", "https://my.geniuslink.com/*", "https://linktw.in/*"],
   "icons": {
     "16": "assets/images/icon-16.png",
     "32": "assets/images/icon-16.png",

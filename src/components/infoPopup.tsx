@@ -10,16 +10,16 @@ interface InfoPopupProps {
   title?: string;
 }
 
-export default function InfoPopup({ 
-  message, 
-  isOpen, 
-  onClose, 
+export default function InfoPopup({
+  message,
+  isOpen,
+  onClose,
   type = 'success',
   autoClose = 5000,
   title
 }: InfoPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     if (isOpen && autoClose) {
       const timer = setTimeout(onClose, autoClose);
@@ -101,7 +101,7 @@ export default function InfoPopup({
   const defaultTitle = type.charAt(0).toUpperCase() + type.slice(1);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/25 backdrop-blur-sm animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
@@ -115,7 +115,7 @@ export default function InfoPopup({
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             {getIcon()}
-            <h2 
+            <h2
               id="popup-title"
               className={`text-lg font-semibold ${colors.text}`}
             >

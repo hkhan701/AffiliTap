@@ -1,22 +1,19 @@
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from 'react';
 
-import { getLicenseStatus, getCurrentPlan } from "@/utils/license";
 import { browserStorage } from "@/utils/browserStorage";
 import { getTrackingIds } from "@/utils/utils";
 
 import ConfirmModal from '../../components/confirmModal';
-import ContentLockOverlay from "../../components/contentLockOverlay";
 import Footer from "../../components/footer";
 import InfoPopup from '../../components/infoPopup';
-import LicenseStatusHeader from "../../components/licenseStatusHeader";
 import Placeholders from "../../components/placeholders";
 
 import {
   ChevronDown,
   FileText,
   Globe,
-  Lock,
+  Link,
   PencilLine,
   Plus,
   Save,
@@ -28,6 +25,11 @@ import {
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
+import DealsPromotionCard from "../../components/deals-promotion-card";
+import LinkTypeNotice from "./linktype-notice";
+import { LinkType } from "@/utils/utils";
+import { Template } from "@/utils/template_utils";
+import PromptEditor from "./prompt-editor";
 
 
 export default function Page() {
@@ -39,33 +41,25 @@ export default function Page() {
     content: defaultContent,
     titleWordLimit: 10,
     trackingId: trackingIds[0]?.id || '',
-    isDefault: true
+    isDefault: true,
+    linkType: 'amazon',
   }
 
-  const [templates, setTemplates] = useState([defaultTemplate])
+  const [templates, setTemplates] = useState([defaultTemplate] as Template[])
   const [activeTemplateId, setActiveTemplateId] = useState(defaultTemplate.id)
   const [newTemplateName, setNewTemplateName] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
-  const [licenseStatus, setLicenseStatus] = useState("")
-  const [currentPlan, setCurrentPlan] = useState(null)
 
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupMessage, setPopupMessage] = useState("")
   const [popupType, setPopupType] = useState<'success' | 'error'>('success')
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-  const isContentLocked = licenseStatus !== 'active'
   const activeTemplate = templates.find(t => t.id === activeTemplateId) || defaultTemplate
 
   const handleClosePopup = () => setIsPopupOpen(false)
 
   const handleAddTemplate = () => {
-    if (currentPlan === "Basic Plan" && templates.length >= 5) {
-      setPopupMessage("You can only add up to 5 templates on the Basic plan. Upgrade to the Pro plan to UNLIMITED templates.");
-      setPopupType("error");
-      setIsPopupOpen(true);
-      return;
-    }
     if (newTemplateName.trim()) {
       const id = Date.now().toString(36) + Math.random().toString(36).substring(2)
       const newTemplate = {
@@ -74,8 +68,9 @@ export default function Page() {
         content: '',
         titleWordLimit: 10,
         trackingId: trackingIds[0]?.id || '',
-        isDefault: false
-      }
+        isDefault: false,
+        linkType: 'amazon'
+      } as Template;
       setTemplates([...templates, newTemplate])
       setActiveTemplateId(newTemplate.id)
       setNewTemplateName('')
@@ -115,7 +110,7 @@ export default function Page() {
 
     try {
       browserStorage.set('templates', JSON.stringify(updatedTemplates))
-      setTemplates(updatedTemplates)
+      setTemplates(updatedTemplates as Template[])
       setPopupMessage("Template saved successfully")
       setPopupType('success')
       setHasChanges(false)
@@ -139,8 +134,17 @@ export default function Page() {
     const storedTemplates = await browserStorage.get('templates')
     if (storedTemplates) {
       const templatesData = JSON.parse(storedTemplates)
-      setTemplates(templatesData)
-      const defaultTemplate = templatesData.find(t => t?.isDefault) || templatesData[0]
+      // Ensure all templates have a linkType (default to 'amazon' for backward compatibility)
+      const updatedTemplates = templatesData.map(template => ({
+        ...template,
+        linkType: template.linkType || 'amazon'
+      }));
+      setTemplates(updatedTemplates)
+
+      // Save the updated templates back to storage
+      await browserStorage.set('templates', JSON.stringify(updatedTemplates));
+
+      const defaultTemplate = updatedTemplates.find(t => t?.isDefault) || updatedTemplates[0]
       if (defaultTemplate) {
         setActiveTemplateId(defaultTemplate.id)
       }
@@ -166,14 +170,7 @@ export default function Page() {
     }
   }
 
-  const fetchLicenseStatus = async () => {
-    const [licenseStatus, currentPlan] = await Promise.all([getLicenseStatus(), getCurrentPlan()]);
-    setLicenseStatus(licenseStatus);
-    setCurrentPlan(currentPlan);
-  };
-
   useEffect(() => {
-    fetchLicenseStatus()
     fetchTemplates()
     getTrackingIds().then((ids) => setTrackingIds(ids));
   }, [])
@@ -200,7 +197,8 @@ export default function Page() {
             </div>
           </div>
           <div className="flex items-center">
-            <LicenseStatusHeader />
+            <DealsPromotionCard />
+            {/* <LicenseStatusHeader /> */}
           </div>
         </div>
       </header>
@@ -208,7 +206,6 @@ export default function Page() {
       <main className="flex-grow container mx-auto px-4 py-8">
 
         <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <ContentLockOverlay isContentLocked={isContentLocked} />
 
           {/* Edit Template Header */}
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200">
@@ -230,7 +227,6 @@ export default function Page() {
                           focus:ring-2 focus:ring-blue-500 focus:border-transparent
                           disabled:bg-gray-50 disabled:text-gray-400 disabled:border-gray-200
                           text-gray-900 transition-all"
-                      disabled={isContentLocked}
                     >
                       {templates.map(template => (
                         <option key={template.id} value={template.id} className="py-1">
@@ -249,11 +245,11 @@ export default function Page() {
                 {/* Set Default Button */}
                 <button
                   onClick={handleSetDefaultTemplate}
-                  disabled={isContentLocked || activeTemplate?.isDefault}
+                  disabled={activeTemplate?.isDefault}
                   className={`group min-w-[160px] px-4 py-2.5 rounded-lg font-medium
                       focus:outline-none focus:ring-2 focus:ring-offset-2 
                       transition-all duration-200 flex items-center justify-center
-                      ${!activeTemplate?.isDefault && !isContentLocked
+                      ${!activeTemplate?.isDefault
                       ? 'bg-amber-500 hover:bg-amber-600 text-white focus:ring-amber-500'
                       : activeTemplate?.isDefault
                         ? 'bg-amber-100 text-amber-700 cursor-default'
@@ -264,9 +260,7 @@ export default function Page() {
                     size={18}
                     className={`mr-2 ${activeTemplate?.isDefault
                       ? 'fill-amber-500'
-                      : !isContentLocked
-                        ? 'group-hover:fill-white transition-colors duration-200'
-                        : ''
+                      : 'group-hover:fill-white transition-colors duration-200'
                       }`}
                   />
                   {activeTemplate?.isDefault ? 'Default Template' : 'Set as Default'}
@@ -284,26 +278,18 @@ export default function Page() {
                   type="text"
                   value={newTemplateName}
                   onChange={(e) => setNewTemplateName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !isContentLocked && handleAddTemplate()}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddTemplate()}
                   placeholder="Create New Template"
                   className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 transition-all"
-                  disabled={isContentLocked}
                 />
                 <button
                   onClick={handleAddTemplate}
-                  disabled={isContentLocked}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 transition-colors group"
                 >
                   <Plus size={18} className="transition-transform duration-200 group-hover:rotate-90" />
                 </button>
               </div>
             </div>
-            {isContentLocked && (
-              <div className="flex items-center text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md">
-                <Lock size={16} className="mr-2" />
-                <span className="text-sm font-medium">Template is locked</span>
-              </div>
-            )}
           </div>
 
           {/* Main Content Grid */}
@@ -322,7 +308,6 @@ export default function Page() {
                   value={activeTemplate.name}
                   onChange={(e) => updateActiveTemplate({ name: e.target.value })}
                   className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
-                  disabled={isContentLocked}
                 />
               </div>
 
@@ -337,7 +322,6 @@ export default function Page() {
                   onChange={(e) => updateActiveTemplate({ content: e.target.value })}
                   placeholder={defaultContent}
                   className="w-full h-80 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm disabled:bg-gray-50 transition-all resize-none"
-                  disabled={isContentLocked}
                 />
               </div>
 
@@ -353,7 +337,6 @@ export default function Page() {
                     value={activeTemplate.trackingId}
                     onChange={(e) => updateActiveTemplate({ trackingId: e.target.value })}
                     className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 bg-white transition-all"
-                    disabled={isContentLocked}
                   >
                     {trackingIds.map(({ id, country }) => (
                       <option key={`${id}-${country}`} value={id}>
@@ -375,41 +358,67 @@ export default function Page() {
                     value={activeTemplate.titleWordLimit}
                     onChange={(e) => updateActiveTemplate({ titleWordLimit: parseInt(e.target.value, 10) || 0 })}
                     className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-all"
-                    disabled={isContentLocked}
                   />
                   <p className="text-xs text-gray-500 mt-1">The maximum number of words in the product title</p>
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Link size={16} className="mr-2" />
+                    Link Generation Type
+                  </label>
+                  <select
+                    value={activeTemplate.linkType || 'amazon'}
+                    onChange={(e) => updateActiveTemplate({ linkType: e.target.value })}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 bg-white transition-all"
+                  >
+                    <option value="amazon">Amazon Short Link</option>
+                    <option value="posttap">PostTap</option>
+                    <option value="joylink">JoyLink</option>
+                    <option value="geniuslink">GeniusLink</option>
+                    <option value="linktwin">LinkTwin</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Choose how affiliate links will be generated for this template</p>
+                </div>
+
+                {/* Login Notice for Deep Linkers */}
+                {activeTemplate.linkType && activeTemplate.linkType !== 'amazon' && (
+                  <LinkTypeNotice linkType={activeTemplate.linkType as LinkType} />
+                )}
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center space-x-4 pt-4">
                 <button
                   onClick={handleSaveTemplate}
-                  disabled={!hasChanges || isContentLocked}
-                  className={`flex items-center px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${hasChanges && !isContentLocked
-                    ? 'bg-green-500 hover:bg-green-600 text-white focus:ring-green-500'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  disabled={!hasChanges}
+                  className={`flex items-center space-x-2 px-4 py-3 border rounded-lg transition-all duration-200 font-medium ${hasChanges
+                    ? 'bg-green-50 border-green-300 hover:bg-green-100 text-green-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                 >
-                  <Save size={18} className="mr-2" />
-                  Save Changes
+                  <Save className={`h-5 w-5 ${hasChanges ? 'text-green-500' : 'text-gray-400'}`} />
+                  <span>Save Changes</span>
+                  {hasChanges && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>}
                 </button>
 
                 <button
                   onClick={() => setIsConfirmModalOpen(true)}
-                  disabled={isContentLocked}
-                  className="flex items-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  className="flex items-center space-x-2 px-4 py-3 bg-red-50 border border-red-300 hover:bg-red-100 text-red-800 rounded-lg transition-all duration-200 font-medium"
                 >
-                  <Trash2 size={18} className="mr-2" />
-                  Delete Template
+                  <Trash2 className="h-5 w-5 text-red-500" />
+                  <span>Delete Template</span>
                 </button>
               </div>
+              <PromptEditor />
             </div>
 
             {/* Right Column - Placeholders */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
-                <Placeholders isContentLocked={isContentLocked} />
+                <Placeholders />
               </div>
             </div>
           </div>
