@@ -1,92 +1,43 @@
-<p align="center">
-  <!-- <img src="logo.svg" width="200px" align="center" alt="Zod logo" /> -->
-  <h1 align="center">Chrome Extension Boilerplate</h1>
-  <p align="center">
-    ✨ <a href="https://github.com/duongductrong/chrome-extension-boilerplate">chrome-extension-boilerplate</a> ✨
-    <br/>
-    Chrome Extension
-  </p>
-</p>
+➤➤ What is AffiliTap?
 
-<p align="center">
-<a href="https://github.com/duongductrong" rel="nofollow"><img src="https://img.shields.io/badge/created%20by-@duongductrong-4BBAAB.svg" alt="Created by Trong Duong / Daniel"></a>
-</p>
+AffiliTap is a powerful Free AI Powered Chrome extension that instantly populates your custom templates with Amazon product details—no extra clicks required. Whether you’re promoting on social media or creating affiliate content for other channels, AffiliTap’s automation will save you time and improve consistency.
 
-This project is a boilerplate for creating Chrome extensions using React and TypeScript. It provides a structured setup with various scripts and configurations to streamline the development process.
+With a few quick setups, AffiliTap lets you turn Amazon pages into perfectly formatted affiliate posts. Its smart templates, real-time previews, and multi-tracking options give you the control you need for any campaign. Plus, we integrate directly with Amazon SiteStripe so you keep your original affiliate links!
 
-## Features
+New Features:
+- Use AI to generate smaller and concise product title.
+- Generate entire posts using AI in a format that you train.
 
-- React-based popup, options, and page scripts
-- TypeScript support
-- Shadow DOM implementation for content scripts
-- Build configuration using tsup
-- ESLint and Prettier for code linting and formatting
-- Dependabot integration for automated dependency updates
 
-## Project Structure
+Key Features
+-------------------------------------------------------------------------------
 
-The project is organized as follows:
+⚡ Lightning Fast Posts
+Product details are automatically pulled the moment you land on an Amazon page—no extra clicks needed.
 
-- `src/`: Contains the source code
-  - `assets/`: Static assets
-  - `lib/`: Utility functions and components
-  - `scripts/`: Extension scripts (background, content, popup, options, page)
-- `dist/`: Output directory for built files
-- Configuration files for TypeScript, ESLint, and build tools
+🧠
+AI-Powered Features
+Generate product titles and posts using AI in the way that you post to save time
 
-## Setup
+📝 Multiple Post Formats
+Create and customize unlimited templates to match any style or affiliate strategy.
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   pnpm install
-   ```
+👀 Live Preview
+See exactly how your post will look before you copy it—what you see is what you get.
 
-## Development
+🔑 Multiple Tracking IDs
+Assign different tracking IDs for various regions to each template, making campaign management a breeze.
 
-To start development, run:
+🌎 Multi-Region Support
+Works seamlessly with Amazon USA and Canada marketplaces.
 
-```
-pnpm dev
-```
+🔗 Deep Linking Integration
+Automatically captures your Amazon links and supports JoyLink, PostTap, and GeniusLink for seamless deep linking.
 
-This will watch for file changes and rebuild the extension.
+🛡️ Secure by Design
+AffiliTap only pulls product info from public Amazon pages and never accesses your accounts, keeping your data safe.
 
-## Building
+🔄 Lifetime Updates
+Enjoy new features and improvements with regular updates—AffiliTap grows alongside you.
 
-To build the extension for production, run:
-
-```
-pnpm build
-```
-
-The built files will be available in the `dist/` directory.
-
-## Scripts
-
-- `dev`: Start development mode
-- `build`: Build the extension for production
-- `lint`: Run ESLint
-- `format`: Run Prettier
-
-## Configuration
-
-- TypeScript configuration: `tsconfig.json`
-- ESLint configuration: `.eslintrc.js`
-- Build configuration: `tsup.config.ts`
-
-## Shadow DOM
-
-The project uses Shadow DOM for content scripts to isolate styles. The implementation can be found in:
-
-## Rendering
-
-The `renderer` function in `src/lib/renderer.tsx` is used to render React components within the Shadow DOM:
-
-## Contributing
-
-Contributions are welcome! Please follow the existing code style and add unit tests for any new or changed functionality.
-
-## License
-
-MIT
+Spend less time formatting and more time succeeding. Try AffiliTap free today and experience affiliate marketing at lightning speed!
