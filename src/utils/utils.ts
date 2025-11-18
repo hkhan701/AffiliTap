@@ -1,6 +1,7 @@
 import { browser } from "webextension-polyfill-ts"
 import { getPage } from "@/utils/urls"
 import { browserStorage } from "./browserStorage"
+import { get } from "http"
 
 /**
  * Converts a JPEG image URL to a PNG data URL.
@@ -382,7 +383,7 @@ export const getLinkByType = async (url: string, linkType: LinkType = 'amazon', 
         url = removeTagFromUrl(url);
         switch (linkType) {
             case 'posttap':
-                const postTapResult = await fetchPostTapLink(url);
+                const postTapResult = await fetchPostTapLink(await getShortUrl(trackingId || ''));
                 return postTapResult.link || url;
             case 'joylink':
                 const joyLinkResult = await fetchJoyLink(url);
