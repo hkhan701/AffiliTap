@@ -33,7 +33,7 @@ export const convertJpgToPng = (jpgUrl: string): Promise<string> => {
  * @param {string} link
  * @return {string}
  */
-export const modifyImageLink = (link: string): string => {
+export const getHighResImageLink = (link: string): string => {
   // Find the positions of the last two decimal points
   const lastDotIndex = link.lastIndexOf(".")
   const secondLastDotIndex = link.substring(0, lastDotIndex).lastIndexOf(".")

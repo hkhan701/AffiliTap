@@ -1,7 +1,29 @@
-import React from 'react';
-import { Copy, CheckCircle, AlertCircle } from 'lucide-react';
+import { Copy, CheckCircle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const ProductImageCard = ({ productData, imageCopied, copyImageToClipboard }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // 
+  const allImages = productData?.image_url
+    ? [...(productData.alt_images || [])]
+    : [];
+
+  // Reset index when product data changes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [productData?.image_url]);
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+  };
+
+  const currentImage = allImages[currentImageIndex];
+  console.log('All Images:', productData);
   return (
     <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
 
@@ -9,18 +31,44 @@ const ProductImageCard = ({ productData, imageCopied, copyImageToClipboard }) =>
         {productData?.image_url ? (
           <div className="space-y-4">
 
-            {/* Image Container - No text needed, the image speaks for itself */}
+            {/* Image Container with Navigation */}
             <div className="relative rounded-lg border border-gray-100 bg-gray-50 overflow-hidden group h-64 flex items-center justify-center p-4">
               <img
-                src={productData.image_url}
+                src={currentImage}
                 alt="Product Preview"
                 className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
+
+              {/* Navigation Buttons - Only show if there are multiple images */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+
+                  {/* Image Counter */}
+                  <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                    {currentImageIndex + 1} / {allImages.length}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Copy Button - Kept exact style */}
             <button
-              onClick={() => copyImageToClipboard(productData?.image_url)}
+              onClick={() => copyImageToClipboard(currentImage)}
               className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-medium
                           transition-all duration-200 ${imageCopied
                   ? 'bg-green-50 text-green-600 border border-green-200'
