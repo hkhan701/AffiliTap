@@ -2,7 +2,7 @@ import { Users, ExternalLink } from 'lucide-react';
 
 const FacebookGroupInvitationCard = () => {
   return (
-    <div className="mt-8 w-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4 shadow-sm">
+    <div className="w-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">

@@ -2,7 +2,7 @@ import { ExternalLink, Sparkles } from 'lucide-react';
 
 const DealsPromotionCard = () => {
   return (
-    <div className="w-full bg-gradient-to-br from-rose-50 to-rose-100 rounded-lg border border-rose-200 p-4 shadow-sm">
+    <div className="w-full bg-gradient-to-br from-rose-50 to-rose-100 rounded-lg border border-rose-200 p-4 shadow-sm z-99">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">

@@ -31,7 +31,6 @@ export default function SidePanel() {
     const [aiError, setAiError] = useState<string | null>(null);
     const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
     const [previewText, setPreviewText] = useState<string>("");
-    const isSettingsOpen = false; // Placeholder for settings state
 
     const handleClosePopup = () => setIsPopupOpen(false);
 
@@ -156,7 +155,7 @@ export default function SidePanel() {
     }
 
     const generatePreviewText = async (templateContent: string, overrideTitle?: string): Promise<string> => {
-        if (!productData) return "No product data available. Loading...";
+        if (!productData) return "No product data available. Please ensure you're on a valid product page.";
 
         const currentTemplate = templates.find(t => t.id === selectedTemplate);
         const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -300,261 +299,211 @@ export default function SidePanel() {
                 <a href="https://affilitap.vercel.app" target="_blank" rel="noopener noreferrer">
                     <img src={logo} alt="logo" width={120} className="transform transition-transform duration-300 hover:scale-105" />
                 </a>
-                {/* {isSettingsOpen ? (
-                    <button
-                        onClick={handleBack}
-                        className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                        aria-label="Go back"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </button>
-                ) : (
-                    
-                    <button
-                        onClick={handleOpenSettings}
-                        className="border-solid border-2 border-black bg-gray-100 text-gray-800 font-semibold p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 flex items-center justify-center"
-                    >
-                        <SettingsIcon className="h-4 w-4" />
-                    </button>
-                )} */}
             </div>
-            <div className="p-3">
+            <div className="p-3 space-y-5">
                 <div className="flex flex-col items-center space-y-5">
-                    {isSettingsOpen ? (
-                        <>
-                            {/* <Settings
-                                onLicenseUpdate={({ licenseStatus, currentPlan }) => {
-                                    setLicenseStatus(licenseStatus);
-                                    setCurrentPlan(currentPlan);
-                                }}
-                            /> */}
-                        </>
-                    ) : (
-                        <>
-                            <DealsPromotionCard />
+                    <DealsPromotionCard />
 
-                            <button
-                                onClick={handleAddTemplate}
-                                className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center group"
-                            >
-                                <Plus className="mr-2 h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
-                                Create New Template
-                            </button>
+                    <button
+                        onClick={handleAddTemplate}
+                        className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center group"
+                    >
+                        <Plus className="mr-2 h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
+                        Create New Template
+                    </button>
+
+                    <div className="relative">
+
+                        {/* Empty State Message - Only shown when no templates */}
+                        {templates.length === 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2">
+                                <div className="flex items-center justify-center p-2 bg-gray-50 
+                                rounded-lg border border-gray-200 text-gray-500 text-sm">
+                                    <AlertCircle className="mr-1.5 h-4 w-4" />
+                                    No templates available
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Post Preview */}
+                    <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
+                        {/* Header Section */}
+                        <div className="p-5 border-b border-gray-200 bg-white">
+                            <label htmlFor="template-select" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Choose Template
+                            </label>
 
                             <div className="relative">
+                                <select
+                                    id="template-select"
+                                    value={selectedTemplate}
+                                    onChange={handleTemplateChange}
+                                    className="w-full appearance-none pl-4 pr-10 py-3 bg-gray-50 
+                     text-gray-900 border border-gray-200 rounded-xl cursor-pointer
+                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                     transition-all duration-200 hover:bg-gray-100/80 font-medium"
+                                >
+                                    {templates.length > 0 ? (
+                                        templates.map((template) => (
+                                            <option key={template.id} value={template.id}>
+                                                {template.name} {template.isDefault && '(Default)'}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>No templates available</option>
+                                    )}
+                                </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                            </div>
 
-                                {/* Empty State Message - Only shown when no templates */}
-                                {templates.length === 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-2">
-                                        <div className="flex items-center justify-center p-2 bg-gray-50 
-                                rounded-lg border border-gray-200 text-gray-500 text-sm">
-                                            <AlertCircle className="mr-1.5 h-4 w-4" />
-                                            No templates available
+                            {/* Empty State Warning */}
+                            {templates.length === 0 && (
+                                <div className="mt-2 flex items-center p-2 text-xs text-amber-600 bg-amber-50 rounded-lg border border-amber-100">
+                                    <AlertCircle className="mr-1.5 h-4 w-4" />
+                                    No templates available
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 space-y-4">
+
+                            {/* Tracking ID and Link Type Badges */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {/* Tracking ID Badge */}
+                                {selectedTemplateData?.trackingId && (
+                                    <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
+                                        <Hash className="h-4 w-4 text-gray-500" />
+                                        <span className="font-medium">Tracking ID:</span>
+                                        <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
+                                            {selectedTemplateData.trackingId}
+                                        </code>
+                                    </div>
+                                )}
+
+                                {/* Link Type Badge */}
+                                {selectedTemplateData?.linkType && (
+                                    <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
+                                        <Link className="h-4 w-4 text-gray-500" />
+                                        <span className="font-medium">Link Type:</span>
+                                        <code className="font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 uppercase tracking-wide">
+                                            {selectedTemplateData.linkType}
+                                        </code>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-4 space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleAiReplaceTitle}
+                                        disabled={isGeneratingTitle || !productData}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+        ${isGeneratingTitle ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
+        text-purple-800 font-medium shadow-sm disabled:opacity-50`}
+                                    >
+                                        <Sparkles className="h-5 w-5" />
+                                        {isGeneratingTitle ? "Generating..." : "Generate Short AI Title"}
+                                    </button>
+
+                                    <button
+                                        disabled={isGeneratingPost || !productData}
+                                        onClick={() => { handleAiReplacePost() }}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+        ${isGeneratingPost ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
+        text-purple-800 font-medium shadow-sm disabled:opacity-50`}
+                                    >
+                                        <Sparkles className="h-5 w-5" />
+                                        {isGeneratingPost ? "Generating..." : "Generate AI Post"}
+                                    </button>
+
+
+                                </div>
+                                {aiError && (
+                                    <div className="flex items-start space-x-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                        <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                                        <div className="text-sm text-red-800">
+                                            <p className="font-medium mb-1">Error</p>
+                                            <p>{aiError}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {remainingUsage !== null && (
+                                    <div className="bg-gray-50 rounded-lg p-3 border">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium text-gray-700">
+                                                Daily AI Usage
+                                            </span>
+                                            <span className="text-sm text-gray-600">
+                                                {remainingUsage}/100 remaining
+                                            </span>
+                                        </div>
+
+                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div
+                                                className={`h-2.5 rounded-full transition-all duration-500 ${remainingUsage > 50
+                                                    ? 'bg-green-500'
+                                                    : remainingUsage > 20
+                                                        ? 'bg-yellow-500'
+                                                        : 'bg-red-500'
+                                                    }`}
+                                                style={{ width: `${(remainingUsage / 100) * 100}%` }}
+                                            />
+                                        </div>
+
+                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                            <span>0</span>
+                                            <span>50</span>
+                                            <span>100</span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-
-
-
-                            {/* Post Preview */}
-                            <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-                                {/* Header Section */}
-                                <div className="p-4 border-b border-gray-100 bg-blue-500">
-                                    <div className="relative">
-                                        {/* Select Label and Control Container */}
-                                        <div className="flex items-center gap-4">
-                                            <label htmlFor="template-select" className="text-white font-medium whitespace-nowrap text-lg">
-                                                Select template:
-                                            </label>
-
-                                            {/* Floating Label Style Select */}
-                                            <div className="relative flex items-center flex-1">
-                                                <div className="relative flex-1">
-                                                    <select
-                                                        id="template-select"
-                                                        value={selectedTemplate}
-                                                        onChange={handleTemplateChange}
-                                                        className="w-full appearance-none pl-2 pr-10 py-2.5 bg-white 
-                            text-gray-700 border border-gray-200 rounded-lg
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                            transition-all duration-200 hover:border-gray-300"
-                                                        aria-label="Select template"
-                                                    >
-                                                        {templates.length > 0 ? (
-                                                            templates.map((template) => (
-                                                                <option key={template.id} value={template.id}>
-                                                                    {template.name} {template.isDefault && '(Default)'}
-                                                                </option>
-                                                            ))
-                                                        ) : (
-                                                            <option disabled>No templates available</option>
-                                                        )}
-                                                    </select>
-
-                                                    {/* Template Icon */}
-                                                    {/* <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" /> */}
-
-                                                    {/* Dropdown Icon */}
-                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Empty State Message - Only shown when no templates */}
-                                        {templates.length === 0 && (
-                                            <div className="absolute top-full left-0 right-0 mt-2">
-                                                <div className="flex items-center justify-center p-2 bg-gray-50 
-                                rounded-lg border border-gray-200 text-gray-500 text-sm">
-                                                    <AlertCircle className="mr-1.5 h-4 w-4" />
-                                                    No templates available
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="p-4 space-y-4">
-
-                                    {/* Tracking ID and Link Type Badges */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {/* Tracking ID Badge */}
-                                        {selectedTemplateData?.trackingId && (
-                                            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                                                <Hash className="h-4 w-4 text-gray-500" />
-                                                <span className="font-medium">Tracking ID:</span>
-                                                <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
-                                                    {selectedTemplateData.trackingId}
-                                                </code>
-                                            </div>
-                                        )}
-
-                                        {/* Link Type Badge */}
-                                        {selectedTemplateData?.linkType && (
-                                            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                                                <Link className="h-4 w-4 text-gray-500" />
-                                                <span className="font-medium">Link Type:</span>
-                                                <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
-                                                    {selectedTemplateData.linkType}
-                                                </code>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-4 space-y-3">
-                                        <div className="flex items-center gap-2">
+                            {/* Preview Content */}
+                            <div className="relative">
+                                <div className="bg-gray-50 rounded-lg border border-gray-200">
+                                    <div className="px-4 py-3 border-b border-gray-200 bg-gray-100/50">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium text-gray-600">Post Preview</span>
                                             <button
-                                                onClick={handleAiReplaceTitle}
-                                                disabled={isGeneratingTitle || !productData}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
-        ${isGeneratingTitle ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
-        text-purple-800 font-medium shadow-sm disabled:opacity-50`}
-                                            >
-                                                <Sparkles className="h-5 w-5" />
-                                                {isGeneratingTitle ? "Generating..." : "Generate Short AI Title"}
-                                            </button>
-
-                                            <button
-                                                disabled={isGeneratingPost || !productData}
-                                                onClick={() => { handleAiReplacePost() }}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
-        ${isGeneratingPost ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
-        text-purple-800 font-medium shadow-sm disabled:opacity-50`}
-                                            >
-                                                <Sparkles className="h-5 w-5" />
-                                                {isGeneratingPost ? "Generating..." : "Generate AI Post"}
-                                            </button>
-
-
-                                        </div>
-                                        {aiError && (
-                                            <div className="flex items-start space-x-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                                <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                                                <div className="text-sm text-red-800">
-                                                    <p className="font-medium mb-1">Error</p>
-                                                    <p>{aiError}</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {remainingUsage !== null && (
-                                            <div className="bg-gray-50 rounded-lg p-3 border">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-sm font-medium text-gray-700">
-                                                        Daily AI Usage
-                                                    </span>
-                                                    <span className="text-sm text-gray-600">
-                                                        {remainingUsage}/100 remaining
-                                                    </span>
-                                                </div>
-
-                                                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                    <div
-                                                        className={`h-2.5 rounded-full transition-all duration-500 ${remainingUsage > 50
-                                                            ? 'bg-green-500'
-                                                            : remainingUsage > 20
-                                                                ? 'bg-yellow-500'
-                                                                : 'bg-red-500'
-                                                            }`}
-                                                        style={{ width: `${(remainingUsage / 100) * 100}%` }}
-                                                    />
-                                                </div>
-
-                                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                                    <span>0</span>
-                                                    <span>50</span>
-                                                    <span>100</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Preview Content */}
-                                    <div className="relative">
-                                        <div className="bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="px-4 py-3 border-b border-gray-200 bg-gray-100/50">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-medium text-gray-600">Post Preview</span>
-                                                    <button
-                                                        onClick={() => copyToClipboard(previewText)}
-                                                        className={`flex items-center px-4 py-2 rounded-lg font-medium
+                                                onClick={() => copyToClipboard(previewText)}
+                                                className={`flex items-center px-4 py-2 rounded-lg font-medium
                                                                    transition-all duration-200 ${copied
-                                                                ? 'bg-green-50 text-green-600 border border-green-200'
-                                                                : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
-                                                            } disabled:opacity-60 disabled:cursor-not-allowed`}
-                                                    >
-                                                        {copied ? (
-                                                            <>
-                                                                <CheckCircle className="w-5 h-5 mr-2" />
-                                                                Copied!
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Copy className="w-5 h-5 mr-2" />
-                                                                Copy
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="p-4">
-                                                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-                                                    {previewText}
-                                                </pre>
-                                            </div>
+                                                        ? 'bg-green-50 text-green-600 border border-green-200'
+                                                        : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                                                    } disabled:opacity-60 disabled:cursor-not-allowed`}
+                                            >
+                                                {copied ? (
+                                                    <>
+                                                        <CheckCircle className="w-5 h-5 mr-2" />
+                                                        Copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="w-5 h-5 mr-2" />
+                                                        Copy
+                                                    </>
+                                                )}
+                                            </button>
                                         </div>
+                                    </div>
+                                    <div className="p-4">
+                                        <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                                            {previewText}
+                                        </pre>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <ProductImageCard
-                                productData={productData}
-                                copyImageToClipboard={copyImageToClipboard}
-                                imageCopied={imageCopied}
-                            />
-                        </>
-                    )}
+                    <ProductImageCard
+                        productData={productData}
+                        copyImageToClipboard={copyImageToClipboard}
+                        imageCopied={imageCopied}
+                    />
                 </div>
 
                 {/* Facebook group invitation card*/}

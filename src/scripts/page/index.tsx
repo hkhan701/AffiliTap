@@ -30,6 +30,7 @@ import LinkTypeNotice from "./linktype-notice";
 import { LinkType } from "@/utils/utils";
 import { Template } from "@/utils/template_utils";
 import PromptEditor from "./prompt-editor";
+import FacebookGroupInvitationCard from "@/components/facebookGroupInvitationCard";
 
 
 export default function Page() {
@@ -178,7 +179,7 @@ export default function Page() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 relative">
       <div
-        className="absolute inset-0 opacity-[0.50]"
+        className="absolute inset-0 opacity-[0.50] pointer-events-none"
         style={{
           backgroundImage: `radial-gradient(#3B82F6 1px, transparent 1px)`,
           backgroundSize: '20px 20px',
@@ -196,14 +197,19 @@ export default function Page() {
               </a>
             </div>
           </div>
-          <div className="flex items-center">
-            <DealsPromotionCard />
-            {/* <LicenseStatusHeader /> */}
-          </div>
+
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow container mx-auto px-4 py-8 relative z-10">
+        <div className="flex items-stretch gap-6 mb-6">
+          <div className="flex-1">
+            <DealsPromotionCard />
+          </div>
+          <div className="flex-1">
+            <FacebookGroupInvitationCard />
+          </div>
+        </div>
 
         <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
