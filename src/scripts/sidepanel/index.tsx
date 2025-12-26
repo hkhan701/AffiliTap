@@ -8,12 +8,13 @@ import { Plus, Hash, CheckCircle, Copy, AlertCircle, ChevronDown, Sparkles, Link
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg';
 
-import InfoPopup from '../../components/infoPopup';
-import HelpCard from "../../components/helpCard";
+import InfoPopup from '@/components/infoPopup';
+import HelpCard from "@/components/helpCard";
 import ProductImageCard from "@/components/productImageCard";
 
 import "../../globals.css";
-import DealsPromotionCard from "../../components/deals-promotion-card";
+import DealsPromotionCard from "@/components/dealsPromotionCard";
+import FacebookGroupInvitationCard from "@/components/facebookGroupInvitationCard";
 
 
 export default function SidePanel() {
@@ -229,8 +230,6 @@ export default function SidePanel() {
             setIsPopupOpen(true);
         }
     };
-
-
 
     const handleAiReplaceTitle = async () => {
         if (!productData?.product_name) return;
@@ -519,25 +518,20 @@ export default function SidePanel() {
                                                     <span className="text-sm font-medium text-gray-600">Post Preview</span>
                                                     <button
                                                         onClick={() => copyToClipboard(previewText)}
-                                                        className={`
-                    inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium
-                    transition-all duration-200
-                    ${copied
+                                                        className={`flex items-center px-4 py-2 rounded-lg font-medium
+                                                                   transition-all duration-200 ${copied
                                                                 ? 'bg-green-50 text-green-600 border border-green-200'
-                                                                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                                                            }
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                    focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
-                  `}
+                                                                : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                                                            } disabled:opacity-60 disabled:cursor-not-allowed`}
                                                     >
                                                         {copied ? (
                                                             <>
-                                                                <CheckCircle className="h-4 w-4 mr-1.5" />
+                                                                <CheckCircle className="w-5 h-5 mr-2" />
                                                                 Copied!
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Copy className="h-4 w-4 mr-1.5" />
+                                                                <Copy className="w-5 h-5 mr-2" />
                                                                 Copy
                                                             </>
                                                         )}
@@ -562,6 +556,9 @@ export default function SidePanel() {
                         </>
                     )}
                 </div>
+
+                {/* Facebook group invitation card*/}
+                <FacebookGroupInvitationCard />
 
                 {/* Having trouble with data card */}
                 <HelpCard />

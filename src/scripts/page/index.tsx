@@ -25,7 +25,7 @@ import {
 // @ts-ignore
 import logo from 'src/assets/images/logo.svg'
 import "../../globals.css"
-import DealsPromotionCard from "../../components/deals-promotion-card";
+import DealsPromotionCard from "../../components/dealsPromotionCard";
 import LinkTypeNotice from "./linktype-notice";
 import { LinkType } from "@/utils/utils";
 import { Template } from "@/utils/template_utils";
