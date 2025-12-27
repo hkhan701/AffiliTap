@@ -369,29 +369,28 @@ export default function SidePanel() {
                         <div className="p-4 space-y-4">
 
                             {/* Tracking ID and Link Type Badges */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {/* Tracking ID Badge */}
-                                {selectedTemplateData?.trackingId && (
-                                    <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                                        <Hash className="h-4 w-4 text-gray-500" />
-                                        <span className="font-medium">Tracking ID:</span>
-                                        <code className="px-2 py-0.5 bg-white rounded border border-gray-200">
-                                            {selectedTemplateData.trackingId}
-                                        </code>
-                                    </div>
-                                )}
+                            {(selectedTemplateData?.trackingId || selectedTemplateData?.linkType) && (
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    {selectedTemplateData?.trackingId && (
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 rounded-md border border-gray-200">
+                                            <Hash className="h-3.5 w-3.5 text-gray-400" />
+                                            <span className="text-gray-500">ID:</span>
+                                            <code className="text-gray-700 font-medium">
+                                                {selectedTemplateData.trackingId}
+                                            </code>
+                                        </div>
+                                    )}
 
-                                {/* Link Type Badge */}
-                                {selectedTemplateData?.linkType && (
-                                    <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                                        <Link className="h-4 w-4 text-gray-500" />
-                                        <span className="font-medium">Link Type:</span>
-                                        <code className="font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 uppercase tracking-wide">
-                                            {selectedTemplateData.linkType}
-                                        </code>
-                                    </div>
-                                )}
-                            </div>
+                                    {selectedTemplateData?.linkType && (
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 rounded-md border border-blue-200">
+                                            <Link className="h-3.5 w-3.5 text-blue-500" />
+                                            <span className="text-blue-600 font-semibold uppercase tracking-wide">
+                                                {selectedTemplateData.linkType}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <div className="mt-4 space-y-3">
                                 <div className="flex items-center gap-2">
@@ -430,32 +429,17 @@ export default function SidePanel() {
                                 )}
 
                                 {remainingUsage !== null && (
-                                    <div className="bg-gray-50 rounded-lg p-3 border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Daily AI Usage
-                                            </span>
-                                            <span className="text-sm text-gray-600">
-                                                {remainingUsage}/100 remaining
-                                            </span>
+                                    <div className="bg-gray-50 rounded-md p-2.5 border border-gray-200">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span className="text-xs font-medium text-gray-700">Daily AI Usage</span>
+                                            <span className="text-xs text-gray-600">{remainingUsage}/100</span>
                                         </div>
-
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
                                             <div
-                                                className={`h-2.5 rounded-full transition-all duration-500 ${remainingUsage > 50
-                                                    ? 'bg-green-500'
-                                                    : remainingUsage > 20
-                                                        ? 'bg-yellow-500'
-                                                        : 'bg-red-500'
+                                                className={`h-1.5 rounded-full transition-all duration-500 ${remainingUsage > 50 ? 'bg-green-500' : remainingUsage > 20 ? 'bg-yellow-500' : 'bg-red-500'
                                                     }`}
                                                 style={{ width: `${(remainingUsage / 100) * 100}%` }}
                                             />
-                                        </div>
-
-                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                            <span>0</span>
-                                            <span>50</span>
-                                            <span>100</span>
                                         </div>
                                     </div>
                                 )}
