@@ -1,4 +1,4 @@
-import { ExternalLink, Sparkles } from 'lucide-react';
+import { ExternalLink, Tag } from 'lucide-react';
 
 const DealsPromotionCard = () => {
   return (
@@ -7,7 +7,7 @@ const DealsPromotionCard = () => {
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             <div className="w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-white animate-pulse" />
+              <Tag className="h-4 w-4 text-white" />
             </div>
           </div>
           <div className="flex-1 min-w-0">

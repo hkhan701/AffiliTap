@@ -309,25 +309,11 @@ export default function SidePanel() {
                 <div className="flex flex-col items-center space-y-5">
                     <button
                         onClick={handleAddTemplate}
-                        className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center group"
+                        className="w-full bg-blue-500 text-white text-lg font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center group"
                     >
                         <Plus className="mr-2 h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
                         Create New Template
                     </button>
-
-                    <div className="relative">
-
-                        {/* Empty State Message - Only shown when no templates */}
-                        {templates.length === 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-2">
-                                <div className="flex items-center justify-center p-2 bg-gray-50 
-                                rounded-lg border border-gray-200 text-gray-500 text-sm">
-                                    <AlertCircle className="mr-1.5 h-4 w-4" />
-                                    No templates available
-                                </div>
-                            </div>
-                        )}
-                    </div>
 
                     {/* Post Preview */}
                     <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
@@ -400,22 +386,22 @@ export default function SidePanel() {
                                     <button
                                         onClick={handleAiReplaceTitle}
                                         disabled={isGeneratingTitle || !productData}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+                                        className={`flex items-center gap-2 px-2 py-2 rounded-md transition border ring-2 ring-purple-500
         ${isGeneratingTitle ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
         text-purple-800 font-medium shadow-sm disabled:opacity-50`}
                                     >
-                                        <Sparkles className="h-5 w-5" />
-                                        {isGeneratingTitle ? "Generating..." : "Generate Short AI Title"}
+                                        <Sparkles className="h-4" />
+                                        {isGeneratingTitle ? "Generating..." : "Condense Product Name"}
                                     </button>
 
                                     <button
                                         disabled={isGeneratingPost || !productData}
                                         onClick={() => { handleAiReplacePost() }}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition border ring-2 ring-purple-500
+                                        className={`flex items-center gap-2 px-2 py-2 rounded-md transition border ring-2 ring-purple-500
         ${isGeneratingPost ? "bg-purple-300" : "bg-purple-100 hover:bg-purple-200"}
         text-purple-800 font-medium shadow-sm disabled:opacity-50`}
                                     >
-                                        <Sparkles className="h-5 w-5" />
+                                        <Sparkles className="h-4" />
                                         {isGeneratingPost ? "Generating..." : "Generate AI Post"}
                                     </button>
 

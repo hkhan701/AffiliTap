@@ -189,16 +189,26 @@ export default function Page() {
 
       {/* Header */}
       <header className="bg-blue-100 shadow-md z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center gap-4">
           <div className="flex items-center">
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-1 border-b border-gray-200">
               <a href="https://affilitap.vercel.app" target="_blank" rel="noopener noreferrer">
                 <img src={logo} alt="logo" width={200} className="transform transition-transform duration-300 hover:scale-105" />
               </a>
             </div>
           </div>
 
+          {/* Backup Notice */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-start gap-2 max-w-md">
+            <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xsm text-amber-800">
+              <span className="font-semibold">Backup Reminder:</span> Please save your templates to a safe location as a backup to prevent data loss.
+            </p>
+          </div>
         </div>
+
       </header>
 
       <main className="flex-grow container mx-auto px-4 py-8 relative z-10">
