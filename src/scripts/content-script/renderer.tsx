@@ -35,6 +35,8 @@ const selectors: Selectors = {
   checkout_discount: [".a-box.a-alert-inline.a-alert-inline-success.a-text-bold .a-alert-content"],
   rating: ['span[data-hook="rating-out-of-text"]'],
   image_url: ["div.imgTagWrapper img"],
+  category: ["#amzn-ss-category-content"],
+  commission_rate: ["#amzn-ss-commission-rate-content"],
 };
 
 const data: Record<string, string | null> = {
@@ -48,6 +50,8 @@ const data: Record<string, string | null> = {
   promo_code_percent_off: null,
   checkout_discount: null,
   rating: null,
+  category: null,
+  commission_rate: null,
 };
 
 function App() {
@@ -333,7 +337,9 @@ function App() {
       final_price: final_price,
       rating: rating,
       image_url: updated_image_url,
-      alt_images: alt_images
+      alt_images: alt_images,
+      category: data.category,
+      commission_rate: data.commission_rate
     };
 
     return productData;

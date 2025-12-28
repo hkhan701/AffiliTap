@@ -31,6 +31,7 @@ export default function SidePanel() {
     const [aiError, setAiError] = useState<string | null>(null);
     const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
     const [previewText, setPreviewText] = useState<string>("");
+    const [showCommissionTooltip, setShowCommissionTooltip] = useState(false);
 
     const handleClosePopup = () => setIsPopupOpen(false);
 
@@ -478,6 +479,44 @@ export default function SidePanel() {
                                             {previewText}
                                         </pre>
                                     </div>
+
+                                    {/* Amazon Commission Rate */}
+                                    {productData?.commission_rate && (
+                                        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                                            <div className="flex items-start gap-2">
+                                                <div className="relative">
+                                                    <svg
+                                                        className="w-4 h-4 text-gray-500 mt-0.5 cursor-help"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        onMouseEnter={() => setShowCommissionTooltip(true)}
+                                                        onMouseLeave={() => setShowCommissionTooltip(false)}
+                                                    >
+                                                        <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-4m0-4h.01" />
+                                                    </svg>
+                                                    {showCommissionTooltip && (
+                                                        <div className="absolute z-50 left-0 bottom-full mb-2 w-64 px-3 py-2 text-xs text-white bg-gray-900 rounded-lg shadow-lg">
+                                                            Estimated from Amazon category data. Accuracy not guaranteed.
+                                                            <div className="absolute left-2 top-full w-2 h-2 bg-gray-900 transform rotate-45 -mt-1"></div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 font-medium mb-0.5">Amazon Commission Rate</p>
+                                                    <p className="text-sm font-semibold text-blue-600">
+                                                        {(() => {
+                                                            const rate = parseFloat(productData.commission_rate.replace('%', '')) / 100;
+                                                            const price = parseFloat(productData.current_price || '0');
+                                                            const commission = (price * rate).toFixed(2);
+                                                            return `$${commission}/sale (${productData.commission_rate})`;
+                                                        })()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
