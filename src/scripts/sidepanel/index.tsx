@@ -32,6 +32,7 @@ export default function SidePanel() {
     const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
     const [previewText, setPreviewText] = useState<string>("");
     const [showCommissionTooltip, setShowCommissionTooltip] = useState(false);
+    const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
     const handleClosePopup = () => setIsPopupOpen(false);
 
@@ -103,9 +104,11 @@ export default function SidePanel() {
     // This effect will update the preview text whenever product data, the selected template, or templates change
     useEffect(() => {
         if (templates.length > 0) {
+            setIsLoadingPreview(true);
             const selectedTemplateContent = templates.find(t => t.id === selectedTemplate)?.content || "";
             generatePreviewText(selectedTemplateContent).then((previewText) => {
                 setPreviewText(previewText);
+                setIsLoadingPreview(false);
             });
         }
     }, [productData, selectedTemplate, templates]);
@@ -302,9 +305,8 @@ export default function SidePanel() {
                 </a>
             </div>
             <div className="p-3 space-y-5">
-                <div className="flex flex-col items-center space-y-5">
-                    <DealsPromotionCard />
 
+                <div className="flex flex-col items-center space-y-5">
                     <button
                         onClick={handleAddTemplate}
                         className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center group"
@@ -475,9 +477,18 @@ export default function SidePanel() {
                                         </div>
                                     </div>
                                     <div className="p-4">
-                                        <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-                                            {previewText}
-                                        </pre>
+                                        {isLoadingPreview ? (
+                                            <div className="flex items-center justify-center py-8">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                                                    <span className="text-sm text-gray-500">Loading preview...</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                                                {previewText}
+                                            </pre>
+                                        )}
                                     </div>
 
                                     {/* Amazon Commission Rate */}
@@ -528,6 +539,9 @@ export default function SidePanel() {
                         imageCopied={imageCopied}
                     />
                 </div>
+
+                {/* Deals Promotion Card */}
+                <DealsPromotionCard />
 
                 {/* Facebook group invitation card*/}
                 <FacebookGroupInvitationCard />
