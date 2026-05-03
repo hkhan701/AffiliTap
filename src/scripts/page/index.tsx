@@ -216,10 +216,11 @@ export default function Page() {
       <main className="flex-grow container mx-auto px-4 py-8 relative z-10">
         <div className="flex items-stretch gap-6 mb-6">
           <div className="flex-1">
-            <DealsPromotionCard />
+            <FacebookGroupInvitationCard />
+            {/* <DealsPromotionCard /> */}
           </div>
           <div className="flex-1">
-            <FacebookGroupInvitationCard />
+
           </div>
         </div>
 

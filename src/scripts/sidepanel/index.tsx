@@ -21,7 +21,7 @@ export default function SidePanel() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
     const [popupType, setPopupType] = useState<'success' | 'error'>('success');
-    const [productData, setProductData] = useState(null);
+    const [productData, setProductData] = useState<any | null>(null);
     const [copied, setCopied] = useState(false)
     const [imageCopied, setImageCopied] = useState(false);
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -527,7 +527,7 @@ export default function SidePanel() {
                 </div>
 
                 {/* Deals Promotion Card */}
-                <DealsPromotionCard />
+                {/* <DealsPromotionCard /> */}
 
                 {/* Facebook group invitation card*/}
                 <FacebookGroupInvitationCard />
