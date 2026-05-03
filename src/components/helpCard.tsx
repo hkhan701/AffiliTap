@@ -5,7 +5,7 @@ export default function HelpCard() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="w-full mx-auto bg-white rounded-xl shadow-md transition-all duration-300 hover:shadow-lg mt-8 border border-gray-100">
+    <div className="w-full mx-auto bg-white rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-gray-100">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

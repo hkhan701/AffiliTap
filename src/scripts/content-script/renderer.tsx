@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { renderer } from "@/lib/renderer"
 import { browser } from "webextension-polyfill-ts"
-import { modifyImageLink } from "@/utils/utils"
+import { getHighResImageLink } from "@/utils/utils"
 
 import "../../globals.css"
 
@@ -35,6 +35,8 @@ const selectors: Selectors = {
   checkout_discount: [".a-box.a-alert-inline.a-alert-inline-success.a-text-bold .a-alert-content"],
   rating: ['span[data-hook="rating-out-of-text"]'],
   image_url: ["div.imgTagWrapper img"],
+  category: ["#amzn-ss-category-content"],
+  commission_rate: ["#amzn-ss-commission-rate-content"],
 };
 
 const data: Record<string, string | null> = {
@@ -48,9 +50,77 @@ const data: Record<string, string | null> = {
   promo_code_percent_off: null,
   checkout_discount: null,
   rating: null,
+  category: null,
+  commission_rate: null,
 };
 
 function App() {
+
+  function getHighResImagesFromScript(): string[] {
+    try {
+      // 1. Helper to find the balanced braces for the JSON object
+      const extractObjectString = (source: string, startKeyword: string) => {
+        const startIndex = source.indexOf(startKeyword);
+        if (startIndex === -1) return null;
+
+        const openBraceIndex = source.indexOf('{', startIndex);
+        if (openBraceIndex === -1) return null;
+
+        let counter = 1;
+        let currentIndex = openBraceIndex + 1;
+        while (counter > 0 && currentIndex < source.length) {
+          if (source[currentIndex] === '{') counter++;
+          if (source[currentIndex] === '}') counter--;
+          currentIndex++;
+        }
+        return (counter === 0) ? source.substring(openBraceIndex, currentIndex) : null;
+      };
+
+      // 2. Helper to make Amazon's single-quoted data valid JSON
+      const sanitizeJSON = (str: string) => {
+        return str
+          .replace(/'/g, '"')          // Replace single quotes with double
+          .replace(/\\"/g, "'")        // Fix escaped quotes
+          .replace(/,\s*}/g, '}');     // Remove trailing commas
+      };
+
+      // 3. Find the script tag
+      const scriptContent = Array.from(document.scripts)
+        .find(s => s.innerHTML.includes("'colorImages':") || s.innerHTML.includes('"colorImages":'))?.innerHTML;
+
+      if (!scriptContent) return [];
+
+      // 4. Extract and Parse
+      const rawString = extractObjectString(scriptContent, "colorImages");
+      if (!rawString) return [];
+
+      let imageData;
+      try {
+        // Try parsing as clean JSON
+        imageData = JSON.parse(sanitizeJSON(rawString));
+      } catch (e) {
+        // Fallback: If parsing fails, just Regex extract the URLs directly
+        // This is a safety net for really messy data
+        const hiResMatches = rawString.match(/(?:'|")hiRes(?:'|")\s*:\s*(?:'|")(https?:\/\/[^"']+)(?:'|")/g);
+        if (hiResMatches) {
+          return hiResMatches.map(m => m.match(/http[^"']+/)?.[0] || "").filter(Boolean);
+        }
+        return [];
+      }
+
+      // 5. Get the Active Images (usually under 'initial')
+      const activeImages = imageData.initial || imageData[Object.keys(imageData)[0]];
+      if (Array.isArray(activeImages)) {
+        return activeImages.map((img: any) => getHighResImageLink(img.hiRes || img.large || null)).filter(Boolean);
+      }
+
+      return [];
+
+    } catch (err) {
+      console.error("Error extracting JSON images:", err);
+      return [];
+    }
+  }
 
   function getDynamicCoupon(coupon_amount: number, coupon_percent: number): string | null {
     if (coupon_amount > 0) {
@@ -236,7 +306,8 @@ function App() {
     const rating = data.rating ? parseFloat(data.rating.split(' ')[0]) : null;
     const imageElement = document.querySelector(selectors.image_url[0]);
     const image_url = imageElement ? imageElement.getAttribute("src") : null;
-    const updated_image_url = image_url ? modifyImageLink(image_url) : null;
+    const updated_image_url = image_url ? getHighResImageLink(image_url) : null;
+    let alt_images = getHighResImagesFromScript();
 
     const final_price = calculateFinalPrice(
       current_price ? parseFloat(current_price) : null,
@@ -265,7 +336,10 @@ function App() {
       dynamic_checkout_discount: getDynamicCheckoutDiscount(parseFloat(checkout_discount_percent || '') || null, parseFloat(checkout_discount_amount || '') || null), // Use parseFloat to convert strings to numberscheckout_discount_percent, checkout_discount_amount),
       final_price: final_price,
       rating: rating,
-      image_url: updated_image_url
+      image_url: updated_image_url,
+      alt_images: alt_images,
+      category: data.category,
+      commission_rate: data.commission_rate
     };
 
     return productData;

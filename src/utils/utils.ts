@@ -1,6 +1,7 @@
 import { browser } from "webextension-polyfill-ts"
 import { getPage } from "@/utils/urls"
 import { browserStorage } from "./browserStorage"
+import { get } from "http"
 
 /**
  * Converts a JPEG image URL to a PNG data URL.
@@ -32,7 +33,7 @@ export const convertJpgToPng = (jpgUrl: string): Promise<string> => {
  * @param {string} link
  * @return {string}
  */
-export const modifyImageLink = (link: string): string => {
+export const getHighResImageLink = (link: string): string => {
   // Find the positions of the last two decimal points
   const lastDotIndex = link.lastIndexOf(".")
   const secondLastDotIndex = link.substring(0, lastDotIndex).lastIndexOf(".")
@@ -112,9 +113,10 @@ export const getShortUrl = async (trackingId: string): Promise<string> => {
 export const getTrackingIds = async () => {
   const caUrl = `https://www.amazon.ca/associates/sitestripe/getStoreTagMap?marketplaceId=7`;
   const usUrl = `https://www.amazon.com/associates/sitestripe/getStoreTagMap?marketplaceId=1`;
+  const ukUrl = `https://www.amazon.co.uk/associates/sitestripe/getStoreTagMap?marketplaceId=3`;
 
   try {
-    const [caResult, usResult] = await Promise.allSettled([
+    const [caResult, usResult, ukResult] = await Promise.allSettled([
       fetch(caUrl).then((response) => {
         if (!response.ok) {
           throw new Error(`Error fetching CA data: ${response.status}`);
@@ -124,6 +126,12 @@ export const getTrackingIds = async () => {
       fetch(usUrl).then((response) => {
         if (!response.ok) {
           throw new Error(`Error fetching US data: ${response.status}`);
+        }
+        return response.json();
+      }),
+      fetch(ukUrl).then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error fetching UK data: ${response.status}`);
         }
         return response.json();
       }),
@@ -142,8 +150,14 @@ export const getTrackingIds = async () => {
             .flat()
             .map((id) => ({ id, country: "US" }))
         : [];
+    const ukTrackingIds =
+      ukResult.status === "fulfilled" && ukResult.value.storeTagMap
+        ? Object.values(ukResult.value.storeTagMap)
+            .flat()
+            .map((id) => ({ id, country: "UK" }))
+        : [];
 
-    return [...caTrackingIds, ...usTrackingIds];
+    return [...caTrackingIds, ...usTrackingIds, ...ukTrackingIds];
   } catch (error) {
     console.log("Unexpected error fetching tracking IDs: ", error);
     return [];
@@ -382,7 +396,7 @@ export const getLinkByType = async (url: string, linkType: LinkType = 'amazon', 
         url = removeTagFromUrl(url);
         switch (linkType) {
             case 'posttap':
-                const postTapResult = await fetchPostTapLink(url);
+                const postTapResult = await fetchPostTapLink(await getShortUrl(trackingId || ''));
                 return postTapResult.link || url;
             case 'joylink':
                 const joyLinkResult = await fetchJoyLink(url);

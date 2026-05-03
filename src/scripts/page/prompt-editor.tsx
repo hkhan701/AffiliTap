@@ -140,11 +140,11 @@ export default function PromptEditor() {
   return (
     <>
       <div className="w-full mx-auto p-4 bg-white rounded-xl shadow border space-y-4 font-sans">
-        {/* Train Your AI Header - Gradient Style */}
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 mb-4">
+        {/* Train Your AI Header */}
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200 px-6 py-4 mb-4">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Brain className="h-6 w-6 text-purple-600" />
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <Brain className="h-6 w-6 text-blue-800" />
+            <h2 className="text-2xl font-bold text-blue-800">
               Train Your AI
             </h2>
           </div>
@@ -154,7 +154,7 @@ export default function PromptEditor() {
           <div className="flex justify-center mt-3">
             <button
               onClick={handleLoadDefaultsClick}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-200 font-medium text-sm"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium text-sm"
             >
               <Sparkles className="h-4 w-4" />
               <span>Load Default Templates</span>
@@ -167,7 +167,7 @@ export default function PromptEditor() {
             <button
               key={type}
               onClick={() => setSelectedTab(type)}
-              className={`px-4 py-2 rounded-lg border whitespace-nowrap ${selectedTab === type ? 'bg-purple-100 border-purple-500 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+              className={`px-4 py-2 rounded-lg border whitespace-nowrap ${selectedTab === type ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-700'
                 } transition-all duration-200`}
             >
               {type}
@@ -194,7 +194,7 @@ export default function PromptEditor() {
           </p>
           <textarea
             ref={textareaRef}
-            className={`w-full min-h-[250px] p-3 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${promptText.length > MAX_CHARACTERS * 0.9
+            className={`w-full min-h-[250px] p-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${promptText.length > MAX_CHARACTERS * 0.9
               ? 'border-red-300 bg-red-50'
               : 'border-gray-200'
               }`}
@@ -233,11 +233,11 @@ export default function PromptEditor() {
             onClick={handleSave}
             disabled={!hasChanges}
             className={`flex items-center space-x-2 px-4 py-3 border rounded-lg transition-all duration-200 font-medium ${hasChanges
-              ? 'bg-green-50 border-green-300 hover:bg-green-100 text-green-800'
+              ? 'bg-blue-50 border-blue-300 hover:bg-blue-100 text-blue-800'
               : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
               }`}
           >
-            <Save className={`h-5 w-5 ${hasChanges ? 'text-green-500' : 'text-gray-400'}`} />
+            <Save className={`h-5 w-5 ${hasChanges ? 'text-blue-600' : 'text-gray-400'}`} />
             <span>Save Changes</span>
             {hasChanges && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>}
           </button>
